@@ -102,3 +102,26 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# pycharm
+.idea/
+.DS_Store
+
+.idea
+.vscode
+.pytest_cache
+
+# delira config
+*/.delira
+
+# backend extensions
+*.pkl
+events.*
+*.pt
+*.pth
+*.ptj
+*.chain
+*.meta
+
+# Test results
+*/UnnamedExperiment/*

@@ -1,0 +1,2 @@
+include versioneer.py
+include deliravision/_version.py
