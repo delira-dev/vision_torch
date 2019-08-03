@@ -30,7 +30,7 @@ readme = read_file(__file__.replace("setup.py", "README.md"))
 
 
 setup(
-    name='deliravision',
+    name='deliravision-torch',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
