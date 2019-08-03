@@ -3,6 +3,7 @@ import torch
 
 class AdversarialLoss(torch.nn.Module):
     def __init__(self, loss_fn=torch.nn.BCELoss(), same_size=False):
+        #TODO: docstring
         super().__init__()
         self._loss_fn = loss_fn
         self._same_size = same_size
@@ -70,6 +71,7 @@ class PullAwayLoss(torch.nn.Module):
     ----------
     `Paper <https://arxiv.org/abs/1609.03126>`_
     """
+
     def __init__(self, weight=1.):
         """
         Parameters
@@ -112,6 +114,7 @@ class DiscriminatorMarginLoss(torch.nn.Module):
     --------
     `Paper <https://arxiv.org/abs/1609.03126>`_
     """
+
     def __init__(self, divisor=64., loss_fn=torch.nn.MSELoss()):
         super().__init__()
         self._divisor = divisor
@@ -142,7 +145,7 @@ class DiscriminatorMarginLoss(torch.nn.Module):
         discr_real = self._loss_fn(real_recon, real_imgs)
         discr_fake = self._loss_fn(fake_recon, fake_imgs)
 
-        margin = max(1., real_imgs.size(0)/self._divisor)
+        margin = max(1., real_imgs.size(0) / self._divisor)
 
         discr_loss = discr_real
 
@@ -156,6 +159,7 @@ class BELoss(torch.nn.Module):
     """
     Boundary Equilibrium Loss
     """
+
     def __init__(self, gamma=0.75, lambda_k=0.001, initial_k=0.0):
         """
         Parameters
@@ -233,6 +237,7 @@ class BoundarySeekingLoss(torch.nn.Module):
     ----------
     https://wiseodd.github.io/techblog/2017/03/07/boundary-seeking-gan/
     """
+
     def __init__(self, weight=0.5):
         """
         Parameters
@@ -265,6 +270,7 @@ class WassersteinDivergence(torch.nn.Module):
     Implements the Wasserstein Divergence proposed in
     `Wasserstein Divergence for GANS <https://arxiv.org/abs/1712.01026>`_
     """
+
     def __init__(self, p=6, k=2):
         """
         Parameters
