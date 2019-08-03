@@ -1,0 +1,77 @@
+language: python
+
+matrix:
+    include:
+        # basic tests withut a backend
+        - name: "Unittests Python 3.5 No Backend"
+          python: 3.5
+          dist: xenial
+          env:
+              - TEST_TYPE="unittests"
+              - BACKEND="None"
+        - name: "Unittests Python 3.6 No Backend"
+          python: 3.6
+          dist: xenial
+          env:
+              - TEST_TYPE="unittests"
+              - BACKEND="None"
+        - name: "Unittests Python 3.7 No Backend"
+          python: 3.7
+          dist: xenial
+          env:
+              - TEST_TYPE="unittests"
+              - BACKEND="None"
+              
+      # STATIC CHECKS
+        - name: "Static Style Checks"
+          python: 3.7
+          dist: xenial
+          env:
+              - TEST_TYPE="style-check"
+        - name: "Documentation"
+          python: 3.7
+          dist: xenial
+          env:
+              - TEST_TYPE="docs"
+
+# command to install dependencies
+before_install:
+    - if [[ "$TEST_TYPE" == "unittests" ]]; then
+          bash scripts/ci/install_before_tests.sh;
+      elif [[ "$TEST_TYPE" == "docs" ]]; then
+          bash scripts/ci/install_before_docs.sh;
+      else
+          bash scripts/ci/install_before_style_check.sh;
+          pip install -r docs/requirements.txt;
+      fi
+
+install:
+    - pip install --no-deps .
+  
+# command to run tests
+script:
+    # run tests or stylechecks
+    - if [[ "$TEST_TYPE" == "unittests" ]]; then
+          bash scripts/ci/run_tests.sh;
+      elif [[ "$TEST_TYPE" == "docs" ]]; then
+          bash scripts/ci/build_docs.sh;
+      else
+          bash scripts/ci/run_style_checks.sh;
+      fi
+
+after_success:
+    - if [[ "$TEST_TYPE" == "unittests" ]]; then
+          codecov;
+
+before_deploy:
+    - cd $TRAVIS_BUILD_DIR
+
+deploy:
+        - provider: pypi
+          user: $PYPI_USERNAME
+          password: $PYPI_PASSWORD
+          on:
+              tags: true
+              distributions: "sdist bdist_wheel"
+              skip_existing: true
+              condition: $TEST_TYPE = style-check
