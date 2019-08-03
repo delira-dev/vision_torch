@@ -1,1 +1,3 @@
-# vision_torch
+# Delira-compatible vision_torch package
+
+🚧 under construction 🚧
