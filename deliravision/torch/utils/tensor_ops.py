@@ -2,6 +2,7 @@ import torch
 
 
 def make_onehot_torch(labels, n_classes):
+    # TODO: docstring
     dtype = labels.dtype
     labels = labels.view(-1, 1).long()
 
