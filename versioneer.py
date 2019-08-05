@@ -7,16 +7,12 @@ The Versioneer
 ==============
 
 * like a rocketeer, but for versions!
-* https://github.com/warner/python-versioneer
-* Brian Warner
+* Original: https://github.com/warner/python-versioneer
+* Extended Version: https://github.com/justusschock/python-remote-versioneer
+* Originally by: Brian Warner ([@warner](https://github.com/warner))
+* Extended by: Justus Schock ([@justusschock](https://github.com/justusschock))
 * License: Public Domain
 * Compatible With: python2.6, 2.7, 3.2, 3.3, 3.4, 3.5, 3.6, and pypy
-* [![Latest Version]
-(https://pypip.in/version/versioneer/badge.svg?style=flat)
-](https://pypi.python.org/pypi/versioneer/)
-* [![Build Status]
-(https://travis-ci.org/warner/python-versioneer.png?branch=master)
-](https://travis-ci.org/warner/python-versioneer)
 
 This is a tool for managing a recorded version number in distutils-based
 python projects. The goal is to remove the tedious and error-prone "update
@@ -24,6 +20,8 @@ the embedded version string" step from your release process. Making a new
 release should be as easy as recording a new tag in your version-control
 system, and maybe making new tarballs.
 
+## Differences to the original version
+In opposite to the original version, this one supports specifying a git remote. This is especially useful for python namespace packaging, since the versions across the different parts of the namespaces should be the same (Which can be achieved by specifying the same remote to check for.
 
 ## Quick Install
 
@@ -180,7 +178,7 @@ two common reasons why `setup.py` might not be in the root:
   `setup.cfg`, and `tox.ini`. Projects like these produce multiple PyPI
   distributions (and upload multiple independently-installable tarballs).
 * Source trees whose main purpose is to contain a C library, but which also
-  provide bindings to Python (and perhaps other langauges) in subdirectories.
+  provide bindings to Python (and perhaps other languages) in subdirectories.
 
 Versioneer will look for `.git` in parent directories, and most operations
 should get the right version string. However `pip` and `setuptools` have bugs
@@ -274,6 +272,12 @@ Specifically, both are released under the Creative Commons "Public Domain
 Dedication" license (CC0-1.0), as described in
 https://creativecommons.org/publicdomain/zero/1.0/ .
 
+[pypi-image]: https://img.shields.io/pypi/v/versioneer.svg
+[pypi-url]: https://pypi.python.org/pypi/versioneer/
+[travis-image]:
+https://img.shields.io/travis/warner/python-versioneer/master.svg
+[travis-url]: https://travis-ci.org/warner/python-versioneer
+
 """
 
 from __future__ import print_function
@@ -358,6 +362,7 @@ def get_config_from_root(root):
         cfg.tag_prefix = ""
     cfg.parentdir_prefix = get(parser, "parentdir_prefix")
     cfg.verbose = get(parser, "verbose")
+    cfg.remote = get(parser, "remote")
     return cfg
 
 
@@ -371,7 +376,7 @@ HANDLERS = {}
 
 
 def register_vcs_handler(vcs, method):  # decorator
-    """Decorator to mark a method as the handler for a particular VCS."""
+    """Create decorator to mark a method as the handler of a VCS."""
     def decorate(f):
         """Store f in HANDLERS[vcs][method]."""
         if vcs not in HANDLERS:
@@ -465,6 +470,7 @@ def get_config():
     cfg.parentdir_prefix = "%(PARENTDIR_PREFIX)s"
     cfg.versionfile_source = "%(VERSIONFILE_SOURCE)s"
     cfg.verbose = False
+    cfg.remote = "%(REMOTE_URL)s"
     return cfg
 
 
@@ -477,7 +483,7 @@ HANDLERS = {}
 
 
 def register_vcs_handler(vcs, method):  # decorator
-    """Decorator to mark a method as the handler for a particular VCS."""
+    """Create decorator to mark a method as the handler of a VCS."""
     def decorate(f):
         """Store f in HANDLERS[vcs][method]."""
         if vcs not in HANDLERS:
@@ -633,8 +639,28 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
             "dirty": False, "error": "no suitable tags", "date": None}
 
 
+def prepare_remote(remote_url, repo_dir, root):
+    GITS = ["git"]
+    if sys.platform == "win32":
+        GITS = ["git.cmd", "git.exe"]
+
+    if not os.path.isdir(repo_dir):
+        run_command(GITS,  ["clone", "-q" , "--bare", remote_url, repo_dir],
+                    cwd=root,
+                    hide_stderr=True)
+    else:
+        run_command(GITS, ["--git-dir=%%s" %% repo_dir, "fetch", "-q",
+                           "--prune", "--force", "origin",
+                           "refs/heads/*:/refs/heads/*"],
+                    cwd=root, hide_stderr=True)
+
+    return repo_dir
+
+
 @register_vcs_handler("git", "pieces_from_vcs")
-def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
+def git_pieces_from_vcs(tag_prefix, root, verbose, remote,
+                        repo_dir="/tmp/repos",
+                        run_command=run_command):
     """Get version from 'git describe' in the root of the source tree.
 
     This only gets called if the git-archive 'subst' keywords were *not*
@@ -645,8 +671,10 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     if sys.platform == "win32":
         GITS = ["git.cmd", "git.exe"]
 
-    out, rc = run_command(GITS, ["rev-parse", "--git-dir"], cwd=root,
-                          hide_stderr=True)
+    repo_dir = os.path.join(repo_dir, os.path.basename(remote).strip(".git"))
+    repo_dir = prepare_remote(remote, repo_dir, root=root)
+    out, rc = run_command(GITS, ["rev-parse", "--git-dir", repo_dir],
+                          cwd=root, hide_stderr=True)
     if rc != 0:
         if verbose:
             print("Directory %%s not under git control" %% root)
@@ -654,15 +682,19 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
 
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
-    describe_out, rc = run_command(GITS, ["describe", "--tags", "--dirty",
+    describe_out, rc = run_command(GITS, ["--git-dir=%%s" %% repo_dir,
+                                          "describe", "--tags", "--dirty",
                                           "--always", "--long",
                                           "--match", "%%s*" %% tag_prefix],
                                    cwd=root)
+
     # --long was added in git-1.5.5
     if describe_out is None:
         raise NotThisMethod("'git describe' failed")
     describe_out = describe_out.strip()
-    full_out, rc = run_command(GITS, ["rev-parse", "HEAD"], cwd=root)
+    full_out, rc = run_command(GITS, ["--git-dir=%%s" %% repo_dir,
+                                      "rev-parse", "HEAD"], cwd=root)
+
     if full_out is None:
         raise NotThisMethod("'git rev-parse' failed")
     full_out = full_out.strip()
@@ -713,17 +745,18 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     else:
         # HEX: no tags
         pieces["closest-tag"] = None
-        count_out, rc = run_command(GITS, ["rev-list", "HEAD", "--count"],
+        count_out, rc = run_command(GITS, ["--git-dir=%%s" %% repo_dir,
+                                           "rev-list", "HEAD", "--count"],
                                     cwd=root)
         pieces["distance"] = int(count_out)  # total number of commits
 
     # commit date: see ISO-8601 comment in git_versions_from_keywords()
-    date = run_command(GITS, ["show", "-s", "--format=%%ci", "HEAD"],
+    date = run_command(GITS, ["--git-dir=%%s" %% repo_dir, "show", "-s",
+                              "--format=%%ci", "HEAD"],
                        cwd=root)[0].strip()
     pieces["date"] = date.strip().replace(" ", "T", 1).replace(" ", "", 1)
 
     return pieces
-
 
 def plus_or_dot(pieces):
     """Return a + if we don't already have one, else return a ."""
@@ -805,7 +838,7 @@ def render_pep440_old(pieces):
 
     The ".dev0" means dirty.
 
-    Eexceptions:
+    Exceptions:
     1: no tags. 0.postDISTANCE[.dev0]
     """
     if pieces["closest-tag"]:
@@ -924,7 +957,7 @@ def get_versions():
                 "date": None}
 
     try:
-        pieces = git_pieces_from_vcs(cfg.tag_prefix, root, verbose)
+        pieces = git_pieces_from_vcs(cfg.tag_prefix, root, verbose, cfg.remote)
         return render(pieces, cfg.style)
     except NotThisMethod:
         pass
@@ -1025,8 +1058,28 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
             "dirty": False, "error": "no suitable tags", "date": None}
 
 
+def prepare_remote(remote_url, repo_dir, root):
+    GITS = ["git"]
+    if sys.platform == "win32":
+        GITS = ["git.cmd", "git.exe"]
+
+    if not os.path.isdir(repo_dir):
+        run_command(GITS,  ["clone", "-q" , "--bare", remote_url, repo_dir],
+                    cwd=root,
+                    hide_stderr=True)
+    else:
+        run_command(GITS, ["--git-dir=%s" % repo_dir, "fetch", "-q",
+                           "--prune", "--force", "origin",
+                           "refs/heads/*:/refs/heads/*"],
+                    cwd=root, hide_stderr=True)
+
+    return repo_dir
+
+
 @register_vcs_handler("git", "pieces_from_vcs")
-def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
+def git_pieces_from_vcs(tag_prefix, root, verbose, remote,
+                        repo_dir="/tmp/repos",
+                        run_command=run_command):
     """Get version from 'git describe' in the root of the source tree.
 
     This only gets called if the git-archive 'subst' keywords were *not*
@@ -1037,8 +1090,10 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     if sys.platform == "win32":
         GITS = ["git.cmd", "git.exe"]
 
-    out, rc = run_command(GITS, ["rev-parse", "--git-dir"], cwd=root,
-                          hide_stderr=True)
+    repo_dir = os.path.join(repo_dir, os.path.basename(remote).strip(".git"))
+    repo_dir = prepare_remote(remote, repo_dir, root=root)
+    out, rc = run_command(GITS, ["rev-parse", "--git-dir", repo_dir],
+                          cwd=root, hide_stderr=True)
     if rc != 0:
         if verbose:
             print("Directory %s not under git control" % root)
@@ -1046,15 +1101,19 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
 
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
-    describe_out, rc = run_command(GITS, ["describe", "--tags", "--dirty",
+    describe_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                          "describe", "--tags", "--dirty",
                                           "--always", "--long",
                                           "--match", "%s*" % tag_prefix],
                                    cwd=root)
+
     # --long was added in git-1.5.5
     if describe_out is None:
         raise NotThisMethod("'git describe' failed")
     describe_out = describe_out.strip()
-    full_out, rc = run_command(GITS, ["rev-parse", "HEAD"], cwd=root)
+    full_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                      "rev-parse", "HEAD"], cwd=root)
+
     if full_out is None:
         raise NotThisMethod("'git rev-parse' failed")
     full_out = full_out.strip()
@@ -1105,17 +1164,18 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     else:
         # HEX: no tags
         pieces["closest-tag"] = None
-        count_out, rc = run_command(GITS, ["rev-list", "HEAD", "--count"],
+        count_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                           "rev-list", "HEAD", "--count"],
                                     cwd=root)
         pieces["distance"] = int(count_out)  # total number of commits
 
     # commit date: see ISO-8601 comment in git_versions_from_keywords()
-    date = run_command(GITS, ["show", "-s", "--format=%ci", "HEAD"],
+    date = run_command(GITS, ["--git-dir=%s" % repo_dir, "show", "-s",
+                              "--format=%ci", "HEAD"],
                        cwd=root)[0].strip()
     pieces["date"] = date.strip().replace(" ", "T", 1).replace(" ", "", 1)
 
     return pieces
-
 
 def do_vcs_install(manifest_in, versionfile_source, ipy):
     """Git-specific installation logic for Versioneer.
@@ -1186,6 +1246,7 @@ SHORT_VERSION_PY = """
 # unpacked source archive. Distribution tarballs contain a pre-generated copy
 # of this file.
 
+from __future__ import absolute_import
 import json
 
 version_json = '''
@@ -1306,7 +1367,7 @@ def render_pep440_old(pieces):
 
     The ".dev0" means dirty.
 
-    Eexceptions:
+    Exceptions:
     1: no tags. 0.postDISTANCE[.dev0]
     """
     if pieces["closest-tag"]:
@@ -1450,7 +1511,7 @@ def get_versions(verbose=False):
     from_vcs_f = handlers.get("pieces_from_vcs")
     if from_vcs_f:
         try:
-            pieces = from_vcs_f(cfg.tag_prefix, root, verbose)
+            pieces = from_vcs_f(cfg.tag_prefix, root, verbose, cfg.remote)
             ver = render(pieces, cfg.style)
             if verbose:
                 print("got version from VCS %s" % ver)
@@ -1480,8 +1541,12 @@ def get_version():
     return get_versions()["version"]
 
 
-def get_cmdclass():
-    """Get the custom setuptools/distutils subclasses used by Versioneer."""
+def get_cmdclass(cmdclass=None):
+    """Get the custom setuptools/distutils subclasses used by Versioneer.
+
+    If the package uses a different cmdclass (e.g. one from numpy), it
+    should be provide as an argument.
+    """
     if "versioneer" in sys.modules:
         del sys.modules["versioneer"]
         # this fixes the "python setup.py develop" case (also 'install' and
@@ -1495,9 +1560,9 @@ def get_cmdclass():
         # parent is protected against the child's "import versioneer". By
         # removing ourselves from sys.modules here, before the child build
         # happens, we protect the child from the parent's versioneer too.
-        # Also see https://github.com/warner/python-versioneer/issues/52
+        # Also see https://github.com/warner/p"REMOTE_URL": cfg.remote,ython-versioneer/issues/52
 
-    cmds = {}
+    cmds = {} if cmdclass is None else cmdclass.copy()
 
     # we add "version" to both distutils and setuptools
     from distutils.core import Command
@@ -1539,7 +1604,9 @@ def get_cmdclass():
     #  setup.py egg_info -> ?
 
     # we override different "build_py" commands for both environments
-    if "setuptools" in sys.modules:
+    if 'build_py' in cmds:
+        _build_py = cmds['build_py']
+    elif "setuptools" in sys.modules:
         from setuptools.command.build_py import build_py as _build_py
     else:
         from distutils.command.build_py import build_py as _build_py
@@ -1587,6 +1654,7 @@ def get_cmdclass():
                              "TAG_PREFIX": cfg.tag_prefix,
                              "PARENTDIR_PREFIX": cfg.parentdir_prefix,
                              "VERSIONFILE_SOURCE": cfg.versionfile_source,
+                             "REMOTE_URL": cfg.remote,
                              })
         cmds["build_exe"] = cmd_build_exe
         del cmds["build_py"]
@@ -1616,11 +1684,14 @@ def get_cmdclass():
                              "TAG_PREFIX": cfg.tag_prefix,
                              "PARENTDIR_PREFIX": cfg.parentdir_prefix,
                              "VERSIONFILE_SOURCE": cfg.versionfile_source,
+                             "REMOTE_URL": cfg.remote,
                              })
         cmds["py2exe"] = cmd_py2exe
 
     # we override different "sdist" commands for both environments
-    if "setuptools" in sys.modules:
+    if 'sdist' in cmds:
+        _sdist = cmds['sdist']
+    elif "setuptools" in sys.modules:
         from setuptools.command.sdist import sdist as _sdist
     else:
         from distutils.command.sdist import sdist as _sdist
@@ -1661,7 +1732,8 @@ a section like:
  versionfile_build = myproject/_version.py
  tag_prefix =
  parentdir_prefix = myproject-
-
+ remote = https://github.com/link/to/myproect
+ 
 You will also need to edit your setup.py to use the results:
 
  import versioneer
@@ -1684,6 +1756,7 @@ SAMPLE_CONFIG = """
 #versionfile_build =
 #tag_prefix =
 #parentdir_prefix =
+#remote =
 
 """
 
@@ -1695,7 +1768,7 @@ del get_versions
 
 
 def do_setup():
-    """Main VCS-independent setup function for installing Versioneer."""
+    """Do main VCS-independent setup function for installing Versioneer."""
     root = get_root()
     try:
         cfg = get_config_from_root(root)
@@ -1717,6 +1790,7 @@ def do_setup():
                         "TAG_PREFIX": cfg.tag_prefix,
                         "PARENTDIR_PREFIX": cfg.parentdir_prefix,
                         "VERSIONFILE_SOURCE": cfg.versionfile_source,
+                        "REMOTE_URL": cfg.remote,
                         })
 
     ipy = os.path.join(os.path.dirname(cfg.versionfile_source),

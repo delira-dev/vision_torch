@@ -45,6 +45,7 @@ def get_config():
     cfg.parentdir_prefix = ""
     cfg.versionfile_source = "deliravision/_version.py"
     cfg.verbose = False
+    cfg.remote = "https://github.com/delira-dev/vision"
     return cfg
 
 
@@ -57,7 +58,7 @@ HANDLERS = {}
 
 
 def register_vcs_handler(vcs, method):  # decorator
-    """Decorator to mark a method as the handler for a particular VCS."""
+    """Create decorator to mark a method as the handler of a VCS."""
     def decorate(f):
         """Store f in HANDLERS[vcs][method]."""
         if vcs not in HANDLERS:
@@ -213,8 +214,28 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
             "dirty": False, "error": "no suitable tags", "date": None}
 
 
+def prepare_remote(remote_url, repo_dir, root):
+    GITS = ["git"]
+    if sys.platform == "win32":
+        GITS = ["git.cmd", "git.exe"]
+
+    if not os.path.isdir(repo_dir):
+        run_command(GITS,  ["clone", "-q" , "--bare", remote_url, repo_dir],
+                    cwd=root,
+                    hide_stderr=True)
+    else:
+        run_command(GITS, ["--git-dir=%s" % repo_dir, "fetch", "-q",
+                           "--prune", "--force", "origin",
+                           "refs/heads/*:/refs/heads/*"],
+                    cwd=root, hide_stderr=True)
+
+    return repo_dir
+
+
 @register_vcs_handler("git", "pieces_from_vcs")
-def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
+def git_pieces_from_vcs(tag_prefix, root, verbose, remote,
+                        repo_dir="/tmp/repos",
+                        run_command=run_command):
     """Get version from 'git describe' in the root of the source tree.
 
     This only gets called if the git-archive 'subst' keywords were *not*
@@ -225,8 +246,10 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     if sys.platform == "win32":
         GITS = ["git.cmd", "git.exe"]
 
-    out, rc = run_command(GITS, ["rev-parse", "--git-dir"], cwd=root,
-                          hide_stderr=True)
+    repo_dir = os.path.join(repo_dir, os.path.basename(remote).strip(".git"))
+    repo_dir = prepare_remote(remote, repo_dir, root=root)
+    out, rc = run_command(GITS, ["rev-parse", "--git-dir", repo_dir],
+                          cwd=root, hide_stderr=True)
     if rc != 0:
         if verbose:
             print("Directory %s not under git control" % root)
@@ -234,15 +257,19 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
 
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
-    describe_out, rc = run_command(GITS, ["describe", "--tags", "--dirty",
+    describe_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                          "describe", "--tags", "--dirty",
                                           "--always", "--long",
                                           "--match", "%s*" % tag_prefix],
                                    cwd=root)
+
     # --long was added in git-1.5.5
     if describe_out is None:
         raise NotThisMethod("'git describe' failed")
     describe_out = describe_out.strip()
-    full_out, rc = run_command(GITS, ["rev-parse", "HEAD"], cwd=root)
+    full_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                      "rev-parse", "HEAD"], cwd=root)
+
     if full_out is None:
         raise NotThisMethod("'git rev-parse' failed")
     full_out = full_out.strip()
@@ -293,17 +320,18 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     else:
         # HEX: no tags
         pieces["closest-tag"] = None
-        count_out, rc = run_command(GITS, ["rev-list", "HEAD", "--count"],
+        count_out, rc = run_command(GITS, ["--git-dir=%s" % repo_dir,
+                                           "rev-list", "HEAD", "--count"],
                                     cwd=root)
         pieces["distance"] = int(count_out)  # total number of commits
 
     # commit date: see ISO-8601 comment in git_versions_from_keywords()
-    date = run_command(GITS, ["show", "-s", "--format=%ci", "HEAD"],
+    date = run_command(GITS, ["--git-dir=%s" % repo_dir, "show", "-s",
+                              "--format=%ci", "HEAD"],
                        cwd=root)[0].strip()
     pieces["date"] = date.strip().replace(" ", "T", 1).replace(" ", "", 1)
 
     return pieces
-
 
 def plus_or_dot(pieces):
     """Return a + if we don't already have one, else return a ."""
@@ -385,7 +413,7 @@ def render_pep440_old(pieces):
 
     The ".dev0" means dirty.
 
-    Eexceptions:
+    Exceptions:
     1: no tags. 0.postDISTANCE[.dev0]
     """
     if pieces["closest-tag"]:
@@ -504,7 +532,7 @@ def get_versions():
                 "date": None}
 
     try:
-        pieces = git_pieces_from_vcs(cfg.tag_prefix, root, verbose)
+        pieces = git_pieces_from_vcs(cfg.tag_prefix, root, verbose, cfg.remote)
         return render(pieces, cfg.style)
     except NotThisMethod:
         pass
