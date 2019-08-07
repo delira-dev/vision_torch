@@ -1,6 +1,5 @@
 import os
 from setuptools import find_packages, setup
-import versioneer
 
 
 def resolve_requirements(file):
@@ -31,8 +30,6 @@ readme = read_file(__file__.replace("setup.py", "README.md"))
 
 setup(
     name='deliravision-torch',
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
     url='https://github.com/delira-dev/vision_torch',
     test_suite="unittest",

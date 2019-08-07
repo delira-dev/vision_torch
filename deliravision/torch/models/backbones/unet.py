@@ -1,4 +1,4 @@
-from ..utils import ConvNdTorch, PoolingNdTorch
+from ..utils import ConvNdTorch, PoolingNdTorch, NormNdTorch
 import torch
 from torch.nn import functional as F
 
@@ -41,8 +41,8 @@ class UNetTorch(BaseSegmentationTorchNetwork):
     """
 
     def __init__(self, num_classes, in_channels=1, depth=5,
-                 start_filts=64, n_dim=2, up_mode='transpose',
-                 merge_mode='concat'):
+                 start_filts=64, n_dim=2, norm_layer="Batch",
+                 up_mode='transpose', merge_mode='concat'):
         """
         Parameters
         ----------
@@ -65,8 +65,8 @@ class UNetTorch(BaseSegmentationTorchNetwork):
             default: 'transpose'
         merge_mode : str
             mode of merging the two paths (with and without pooling). Must
-            be one of ['merge', 'add']
-            if 'merge':
+            be one of ['concat', 'add']
+            if 'concat':
                 Concatenates along the channel dimension (Original UNet)
             if 'add':
                 Adds both tensors (Residual behaviour; LinkNet)
@@ -100,6 +100,7 @@ class UNetTorch(BaseSegmentationTorchNetwork):
         self.in_channels = in_channels
         self.start_filts = start_filts
         self.depth = depth
+        self._norm_layer = norm_layer
 
         self.down_convs = []
         self.up_convs = []
@@ -107,7 +108,7 @@ class UNetTorch(BaseSegmentationTorchNetwork):
         self.conv_final = None
 
         super().__init__(n_dim, num_classes, in_channels, depth,
-                         start_filts)
+                         start_filts, norm_layer)
 
         self.reset_params()
 
@@ -160,9 +161,10 @@ class UNetTorch(BaseSegmentationTorchNetwork):
         return {"pred": x}
 
     def _build_model(self, n_dim, num_classes, in_channels=1, depth=5,
-                     start_filts=64) -> None:
+                     start_filts=64, norm_layer='Batch') -> None:
         """
         Builds the actual model
+
         Parameters
         ----------
         num_classes : int
@@ -235,7 +237,7 @@ class UNetTorch(BaseSegmentationTorchNetwork):
             """
 
             def __init__(self, n_dim, in_channels, out_channels,
-                         pooling=True):
+                         pooling=True, norm_layer="Batch"):
                 super().__init__()
 
                 self.n_dim = n_dim
@@ -245,15 +247,17 @@ class UNetTorch(BaseSegmentationTorchNetwork):
 
                 self.conv1 = conv3x3(self.n_dim, self.in_channels,
                                      self.out_channels)
+                self.norm1 = NormNdTorch(norm_layer, n_dim, self.out_channels)
                 self.conv2 = conv3x3(self.n_dim, self.out_channels,
                                      self.out_channels)
+                self.norm2 = NormNdTorch(norm_layer, n_dim, self.out_channels)
 
                 if self.pooling:
                     self.pool = PoolingNdTorch("Max", n_dim, 2)
 
             def forward(self, x):
-                x = F.relu(self.conv1(x))
-                x = F.relu(self.conv2(x))
+                x = F.relu(self.norm1(self.conv1(x)))
+                x = F.relu(self.norm2(self.conv2(x)))
                 before_pool = x
                 if self.pooling:
                     x = self.pool(x)
@@ -289,9 +293,11 @@ class UNetTorch(BaseSegmentationTorchNetwork):
                     self.conv1 = conv3x3(self.n_dim,
                                          out_channels,
                                          self.out_channels)
+                self.norm1 = NormNdTorch(norm_layer, n_dim, self.out_channels)
                 self.conv2 = conv3x3(self.n_dim,
                                      self.out_channels,
                                      self.out_channels)
+                self.norm2 = NormNdTorch(norm_layer, n_dim, self.out_channels)
 
             def forward(self, from_down, from_up):
                 from_up = self.upconv(from_up)
@@ -299,8 +305,8 @@ class UNetTorch(BaseSegmentationTorchNetwork):
                     x = torch.cat((from_up, from_down), 1)
                 else:
                     x = from_up + from_down
-                x = F.relu(self.conv1(x))
-                x = F.relu(self.conv2(x))
+                x = F.relu(self.norm1(self.conv1(x)))
+                x = F.relu(self.norm1(self.conv2(x)))
                 return x
 
         outs = in_channels

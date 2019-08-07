@@ -1,5 +1,6 @@
 import torch
 
+
 class ConvWrapper(torch.nn.Module):
     """
     Convolution Wrapper to Switch accross dimensions and transposed by a
@@ -23,9 +24,10 @@ class ConvWrapper(torch.nn.Module):
         * :class:`torch.nn.ConvTranspose3d`
 
     """
+
     def __init__(self, n_dim, in_channels, out_channels, kernel_size,
-                    stride=1, padding=0, dilation=1, groups=1, bias=True,
-                    transposed=False, **kwargs):
+                 stride=1, padding=0, dilation=1, groups=1, bias=True,
+                 transposed=False, **kwargs):
         """
 
         Parameters
@@ -121,6 +123,7 @@ class PoolingWrapper(torch.nn.Module):
         * :class:`torch.nn.AdaptiveAvgPool3d`
 
     """
+
     def __init__(self, pooling_type, n_dim, *args, **kwargs):
         """
 
@@ -166,7 +169,7 @@ class PoolingWrapper(torch.nn.Module):
             the pooled input
 
         """
-        return  self.pool(x)
+        return self.pool(x)
 
 
 class NormWrapper(torch.nn.Module):
@@ -226,14 +229,16 @@ class NormWrapper(torch.nn.Module):
 
         """
         super().__init__()
-
-        if n_dim is None:
-            dim_str = ""
+        if norm_type is None:
+            self.norm = None
         else:
-            dim_str = str(n_dim)
+            if n_dim is None:
+                dim_str = ""
+            else:
+                dim_str = str(n_dim)
 
-        norm_cls = getattr(torch.nn, "%sNorm%sd" % (norm_type, dim_str))
-        self.norm = norm_cls(*args, **kwargs)
+            norm_cls = getattr(torch.nn, "%sNorm%sd" % (norm_type, dim_str))
+            self.norm = norm_cls(*args, **kwargs)
 
     def forward(self, x: torch.Tensor):
         """
@@ -250,7 +255,10 @@ class NormWrapper(torch.nn.Module):
             the normalized input
 
         """
-        return self.norm(x)
+        if self.norm is None:
+            return x
+        else:
+            return self.norm(x)
 
 
 class DropoutWrapper(torch.nn.Module):
@@ -261,4 +269,3 @@ class DropoutWrapper(torch.nn.Module):
 
     def forward(self, x):
         return self.dropout(x)
-

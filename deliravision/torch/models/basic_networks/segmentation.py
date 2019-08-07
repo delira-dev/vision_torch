@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod
 import torch
-from delira.models.abstract_network import AbstractPyTorchNetwork
+from delira.models.backends.torch.abstract_network import AbstractPyTorchNetwork
 
 
 class BaseSegmentationTorchNetwork(AbstractPyTorchNetwork):
