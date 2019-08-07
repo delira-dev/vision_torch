@@ -1,4 +1,3 @@
-from delira import get_backends
 import unittest
 import numpy as np
 
@@ -21,11 +20,9 @@ class TensorOpTest(unittest.TestCase):
             [1, 0, 0, 0, 0, 0],
         ], dtype=np.float)
 
-    @unittest.skipIf("TORCH" not in get_backends(),
-                     "No Torch Backend Installed")
     def test_make_onehot_torch(self):
         import torch
-        from deliravision.utils.tensor_ops import make_onehot_torch
+        from deliravision.torch.utils.tensor_ops import make_onehot_torch
 
         self.assertListEqual(self._targets.tolist(),
                              make_onehot_torch(
