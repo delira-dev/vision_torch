@@ -8,20 +8,20 @@ from ..basic_networks import BaseClassificationTorchNetwork
 def conv3x3(in_planes, out_planes, stride=1, n_dim=2):
     """3x3 convolution with padding"""
     return ConvNdTorch(n_dim, in_planes, out_planes, kernel_size=3,
-                        stride=stride, padding=1, bias=False)
+                       stride=stride, padding=1, bias=False)
 
 
 def conv1x1(in_planes, out_planes, stride=1, n_dim=2):
     """1x1 convolution"""
     return ConvNdTorch(n_dim, in_planes, out_planes, kernel_size=1,
-                        stride=stride, bias=False)
+                       stride=stride, bias=False)
 
 
 class BasicBlockTorch(torch.nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None,
-                    norm_layer="Batch", n_dim=2):
+                 norm_layer="Batch", n_dim=2):
         super().__init__()
         # Both self.conv1 and self.downsample layers downsample the input
         # when stride != 1
@@ -57,7 +57,7 @@ class BottleneckTorch(torch.nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None,
-                    norm_layer="Batch", n_dim=2):
+                 norm_layer="Batch", n_dim=2):
         super().__init__()
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, planes, n_dim=n_dim)
@@ -95,35 +95,54 @@ class BottleneckTorch(torch.nn.Module):
 
 class ResNetTorch(BaseClassificationTorchNetwork):
     def __init__(self, block, layers, num_classes=1000, in_channels=3,
-                    zero_init_residual=False, norm_layer="Batch", n_dim=2,
-                    start_filts=64):
+                 zero_init_residual=False, norm_layer="Batch", n_dim=2,
+                 start_filts=64, deep_start=False, avg_down=False):
         super().__init__(block, layers, num_classes, in_channels,
-                            zero_init_residual, norm_layer, n_dim, start_filts)
+                         zero_init_residual, norm_layer, n_dim, start_filts,
+                         deep_start, avg_down)
 
     def _build_model(self, block, layers, num_classes, in_channels,
-                        zero_init_residual, norm_layer, n_dim,
-                        start_filts) -> None:
+                     zero_init_residual, norm_layer, n_dim,
+                     start_filts, deep_start, avg_down) -> None:
         self.start_filts = start_filts
         self.inplanes = copy.copy(start_filts)
-        self.conv1 = ConvNdTorch(n_dim, in_channels, self.inplanes,
-                                    kernel_size=7, stride=2, padding=3,
-                                    bias=False)
 
+        if not deep_start:
+            self.conv1 = ConvNdTorch(n_dim, in_channels, self.inplanes,
+                                     kernel_size=7, stride=2, padding=3,
+                                     bias=False)
+        else:
+            self.conv1 = torch.nn.Sequential(
+                ConvNdTorch(n_dim, in_channels, self.inplanes,
+                            kernel_size=3, stride=2, padding=1,
+                            bias=False),
+                NormNdTorch(norm_layer, n_dim, self.inplanes),
+                torch.nn.ReLU(inplace=True),
+                ConvNdTorch(n_dim, self.inplanes, self.inplanes,
+                            kernel_size=3, stride=1, padding=1,
+                            bias=False),
+                NormNdTorch(norm_layer, n_dim, self.inplanes),
+                torch.nn.ReLU(inplace=True),
+                ConvNdTorch(n_dim, self.inplanes, self.inplanes,
+                            kernel_size=3, stride=1, padding=1,
+                            bias=False),
+            )
         self.bn1 = NormNdTorch(norm_layer, n_dim, self.inplanes)
         self.relu = torch.nn.ReLU(inplace=True)
         self.maxpool = PoolingNdTorch("Max", n_dim=n_dim, kernel_size=3,
-                                        stride=2, padding=1)
+                                      stride=2, padding=1)
 
         num_layers = 0
         for idx, _layers in enumerate(layers):
             stride = 1 if idx == 0 else 2
-            planes = min(self.start_filts*pow(2, idx), self.start_filts*8)
+            planes = min(self.start_filts * pow(2, idx), self.start_filts * 8)
             _local_layer = self._make_layer(block, planes, _layers,
                                             stride=stride,
                                             norm_layer=norm_layer,
-                                            n_dim=n_dim)
+                                            n_dim=n_dim,
+                                            avg_down=avg_down)
 
-            setattr(self, "layer%d" % (idx+1), _local_layer)
+            setattr(self, "layer%d" % (idx + 1), _local_layer)
             num_layers += 1
 
         self.num_layers = num_layers
@@ -134,8 +153,8 @@ class ResNetTorch(BaseClassificationTorchNetwork):
         for m in self.modules():
             if isinstance(m, ConvNdTorch):
                 torch.nn.init.kaiming_normal_(m.conv.weight,
-                                                mode='fan_out',
-                                                nonlinearity='relu')
+                                              mode='fan_out',
+                                              nonlinearity='relu')
 
             elif isinstance(m, NormNdTorch):
                 if hasattr(m.norm, "weight") and m.norm.weight is not None:
@@ -156,14 +175,23 @@ class ResNetTorch(BaseClassificationTorchNetwork):
                     torch.nn.init.constant_(m.bn2.norm.weight, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1, norm_layer="Batch",
-                    n_dim=2):
+                    n_dim=2, avg_down=False):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = torch.nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride,
-                        n_dim=n_dim),
-                NormNdTorch(norm_layer, n_dim, planes * block.expansion),
-            )
+            if not avg_down:
+                downsample = torch.nn.Sequential(
+                    conv1x1(self.inplanes, planes * block.expansion, stride,
+                            n_dim=n_dim),
+                    NormNdTorch(norm_layer, n_dim, planes * block.expansion),
+                )
+            else:
+                downsample = torch.nn.Sequential(
+                    PoolingNdTorch("Avg", n_dim=n_dim, kernel_size=stride,
+                                   stride=stride),
+                    conv1x1(self.inplanes, planes * block.expansion, 1,
+                            n_dim=n_dim),
+                    NormNdTorch(norm_layer, n_dim, planes * block.expansion),
+                )
 
         layers = [block(self.inplanes, planes, stride, downsample,
                         norm_layer, n_dim=n_dim)]
@@ -181,7 +209,7 @@ class ResNetTorch(BaseClassificationTorchNetwork):
         x = self.maxpool(x)
 
         for i in range(self.num_layers):
-            x = getattr(self, "layer%d" % (i+1))(x)
+            x = getattr(self, "layer%d" % (i + 1))(x)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)

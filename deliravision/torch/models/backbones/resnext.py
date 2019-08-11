@@ -15,7 +15,7 @@ class BottleneckTorch(nn.Module):
     """
 
     def __init__(self, in_channels, channels, stride, cardinality,
-                 width, n_dim, norm_layer):
+                 width, n_dim, norm_layer, avg_down):
         """
 
         Parameters
@@ -58,10 +58,21 @@ class BottleneckTorch(nn.Module):
         self.shortcut = nn.Sequential()
 
         if in_channels != out_channels or stride != 1:
-            self.shortcut.add_module(
-                'shortcut_conv', ConvNdTorch(n_dim, in_channels, out_channels,
-                                             kernel_size=1, stride=stride,
-                                             padding=0, bias=False))
+            if avg_down:
+                self.shortcut.add_module(
+                    'shortcut_avg', PoolingNdTorch("Avg", n_dim=n_dim,
+                                                   kernel_size=stride, stride=stride))
+                self.shortcut.add_module(
+                    'shortcut_conv', ConvNdTorch(
+                        n_dim, in_channels, out_channels,
+                        kernel_size=1, stride=1,
+                        padding=0, bias=False))
+            else:
+                self.shortcut.add_module(
+                    'shortcut_conv', ConvNdTorch(
+                        n_dim, in_channels, out_channels,
+                        kernel_size=1, stride=stride,
+                        padding=0, bias=False))
             self.shortcut.add_module(
                 'shortcut_bn', NormNdTorch(norm_layer, n_dim, out_channels))
 
@@ -94,65 +105,14 @@ class BottleneckTorch(nn.Module):
         return self.relu(res + out)
 
 
-class StartConv(nn.Module):
-    def __init__(self, n_dim, norm_layer, in_channels, start_filts, mode='7x7'):
-        """
-        Defines different sequences of start convolutions
-
-        Parameters
-        ----------
-        n_dim : int
-            dimensionality of convolutions
-        norm_layer : str
-            type of normlization layer
-        in_channels : int
-            number of input channels
-        start_filts : int
-            number of channels after first convolution
-        mode : str
-            either '7x7' for default configuration (7x7 conv) or 3x3 for
-            three consecutive convolutions as proposed in
-            https://arxiv.org/abs/1812.01187
-        """
-        super().__init__()
-        self._in_channels = in_channels
-        self._start_filts = start_filts
-        self._mode = mode
-
-        if mode == '7x7':
-            self.convs = nn.Sequential(
-                *[ConvNdTorch(n_dim, in_channels, self._start_filts,
-                              kernel_size=7, stride=2, padding=3, bias=False),
-                    NormNdTorch(norm_layer, n_dim, self._start_filts)]
-            )
-        elif mode == '3x3':
-            self.convs = nn.Sequential(
-                *[ConvNdTorch(n_dim, in_channels, self._start_filts,
-                              kernel_size=3, stride=2, padding=1, bias=False),
-                    NormNdTorch(norm_layer, n_dim, self._start_filts),
-                    ConvNdTorch(n_dim, self._start_filts, self._start_filts,
-                                kernel_size=3, stride=1, padding=1, bias=False),
-                    NormNdTorch(norm_layer, n_dim, self._start_filts),
-                    ConvNdTorch(n_dim, self._start_filts, self._start_filts,
-                                kernel_size=3, stride=1, padding=1, bias=False),
-                    NormNdTorch(norm_layer, n_dim, self._start_filts)
-                  ]
-            )
-        else:
-            raise ValueError('{} is not a supported mode!'.format(mode))
-
-    def forward(self, input):
-        return self.convs(input)
-
-
 class ResNeXtTorch(BaseClassificationTorchNetwork):
     """
     ResNeXt model architecture
     """
 
     def __init__(self, block, layers, num_classes, in_channels, cardinality,
-                 width=4, start_filts=64, start_mode='7x7',
-                 n_dim=2, norm_layer='Batch'):
+                 width=4, start_filts=64, n_dim=2, norm_layer='Batch',
+                 deep_start=False, avg_down=False, **kwargs):
         """
 
         Parameters
@@ -181,12 +141,12 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
             type of normalization
         """
         super().__init__(block, layers, num_classes, in_channels,
-                         cardinality, width, start_filts, start_mode,
-                         n_dim, norm_layer)
+                         cardinality, width, start_filts,
+                         n_dim, norm_layer, deep_start, avg_down, **kwargs)
 
     def _build_model(self, block, layers, num_classes, in_channels,
-                     cardinality, width, start_filts, start_mode,
-                     n_dim, norm_layer) -> None:
+                     cardinality, width, start_filts, n_dim, norm_layer,
+                     deep_start, avg_down, **kwargs) -> None:
 
         self._cardinality = cardinality
         self._width = width
@@ -198,8 +158,28 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
         self._layers = layers
         self.inplanes = copy.copy(self._start_filts)
 
-        self.conv1 = StartConv(n_dim, norm_layer, in_channels,
-                               start_filts, start_mode)
+        if not deep_start:
+            self.conv1 = ConvNdTorch(n_dim, in_channels, self.inplanes,
+                                     kernel_size=7, stride=2, padding=3,
+                                     bias=False)
+        else:
+            self.conv1 = torch.nn.Sequential(
+                ConvNdTorch(n_dim, in_channels, self.inplanes,
+                            kernel_size=3, stride=2, padding=1,
+                            bias=False),
+                NormNdTorch(norm_layer, n_dim, self.inplanes),
+                torch.nn.ReLU(inplace=True),
+                ConvNdTorch(n_dim, self.inplanes, self.inplanes,
+                            kernel_size=3, stride=1, padding=1,
+                            bias=False),
+                NormNdTorch(norm_layer, n_dim, self.inplanes),
+                torch.nn.ReLU(inplace=True),
+                ConvNdTorch(n_dim, self.inplanes, self.inplanes,
+                            kernel_size=3, stride=1, padding=1,
+                            bias=False),
+            )
+        self.bn1 = NormNdTorch(norm_layer, n_dim, self.inplanes)
+        self.relu = torch.nn.ReLU(inplace=True)
         self.maxpool = PoolingNdTorch("Max", n_dim=n_dim, kernel_size=3,
                                       stride=2, padding=1)
 
@@ -212,7 +192,10 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
                                             planes,
                                             norm_layer=norm_layer,
                                             n_dim=n_dim,
-                                            pool_stride=stride)
+                                            avg_down=avg_down,
+                                            pool_stride=stride,
+                                            **kwargs,
+                                            )
 
             setattr(self, "C%d" % (idx + 1), _local_layer)
             self.inplanes = planes * block.expansion
@@ -222,7 +205,7 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
         self.fc = nn.Linear(self.inplanes, num_classes)
 
     def _make_layer(self, block, num_layers, in_channels, channels,
-                    norm_layer, n_dim, pool_stride=2):
+                    norm_layer, n_dim, avg_down, pool_stride=2, **kwargs):
         """
         Stack multiple blocks
 
@@ -247,23 +230,25 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
         module = []
         module.append(block(in_channels, channels, pool_stride,
                             self._cardinality, self._width,
-                            n_dim, norm_layer))
+                            n_dim, norm_layer, avg_down,
+                            **kwargs))
 
         in_channels = channels * block.expansion
 
         for i in range(1, num_layers):
             module.append(block(in_channels, channels, 1,
                                 self._cardinality, self._width,
-                                n_dim, norm_layer))
+                                n_dim, norm_layer, avg_down,
+                                **kwargs))
         return nn.Sequential(*module)
 
-    def forward(self, inp) -> dict:
+    def forward(self, x) -> dict:
         """
         Forward input through network
 
         Parameters
         ----------
-        inp : torch.Tensor
+        x : torch.Tensor
             input to network
 
         Returns
@@ -271,7 +256,9 @@ class ResNeXtTorch(BaseClassificationTorchNetwork):
         torch.Tensor
             network output
         """
-        x = self.conv1(inp)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
         x = self.maxpool(x)
 
         for i in range(self._num_layers):
