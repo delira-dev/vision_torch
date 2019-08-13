@@ -6,6 +6,7 @@ class Encoder(torch.nn.Module):
     A simple Encoder network, which encodes the content and the style
     separately
     """
+
     def __init__(self, in_channels=3, dim=64, n_residual=3, n_downsample=2,
                  style_dim=8):
         """
@@ -57,6 +58,7 @@ class Decoder(torch.nn.Module):
     Simple Decoder to convert a style encoding and a content encoding into an
     image
     """
+
     def __init__(self, out_channels=3, num_filts=64, n_residual=3,
                  n_upsample=2, style_dim=8):
         """
@@ -84,12 +86,15 @@ class Decoder(torch.nn.Module):
 
         # Upsampling
         for _ in range(n_upsample):
-            layers += [
-                torch.nn.Upsample(scale_factor=2),
-                torch.nn.Conv2d(num_filts, num_filts // 2, 5, stride=1, padding=2),
-                torch.nn.LayerNorm(num_filts // 2),
-                torch.nn.ReLU(inplace=True),
-            ]
+            layers += [torch.nn.Upsample(scale_factor=2),
+                       torch.nn.Conv2d(num_filts,
+                                       num_filts // 2,
+                                       5,
+                                       stride=1,
+                                       padding=2),
+                       torch.nn.LayerNorm(num_filts // 2),
+                       torch.nn.ReLU(inplace=True),
+                       ]
             num_filts = num_filts // 2
 
         # Output layer
@@ -167,7 +172,13 @@ class ContentEncoder(torch.nn.Module):
     """
     Encoder Network to encode an image's content
     """
-    def __init__(self, in_channels=3, num_filts=64, n_residual=3, n_downsample=2):
+
+    def __init__(
+            self,
+            in_channels=3,
+            num_filts=64,
+            n_residual=3,
+            n_downsample=2):
         """
 
         Parameters
@@ -194,11 +205,14 @@ class ContentEncoder(torch.nn.Module):
 
         # Downsampling
         for _ in range(n_downsample):
-            layers += [
-                torch.nn.Conv2d(num_filts, num_filts * 2, 4, stride=2, padding=1),
-                torch.nn.InstanceNorm2d(num_filts * 2),
-                torch.nn.ReLU(inplace=True),
-            ]
+            layers += [torch.nn.Conv2d(num_filts,
+                                       num_filts * 2,
+                                       4,
+                                       stride=2,
+                                       padding=1),
+                       torch.nn.InstanceNorm2d(num_filts * 2),
+                       torch.nn.ReLU(inplace=True),
+                       ]
             num_filts *= 2
 
         # Residual blocks
@@ -230,6 +244,7 @@ class StyleEncoder(torch.nn.Module):
     """
     Encoder Network to encode an image's style
     """
+
     def __init__(self, in_channels=3, num_filts=64, n_downsample=2,
                  style_dim=8):
         """
@@ -294,6 +309,7 @@ class MLP(torch.nn.Module):
     """
     A simple Multilayer Perceptron to transform the AdaIN parameters
     """
+
     def __init__(self, input_dim, output_dim, num_filts=256, n_blk=3):
         """
 
@@ -342,6 +358,7 @@ class MultiResolutionDiscriminator(torch.nn.Module):
     A discriminator operating on multiple Paths each with a different
     resolution
     """
+
     def __init__(self, in_channels=3, num_paths=3):
         """
 
@@ -408,6 +425,7 @@ class ResidualBlock(torch.nn.Module):
     """
     Residual Block supporting the :class:`AdaptiveInstanceNorm2d`
     """
+
     def __init__(self, features, norm="in"):
         """
 

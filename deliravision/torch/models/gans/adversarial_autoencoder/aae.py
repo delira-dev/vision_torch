@@ -31,6 +31,7 @@ class AdversarialAutoEncoderPyTorch(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, latent_dim, img_shape, generator_cls=Generator,
                  discriminator_cls=Discriminator):
         """
@@ -179,6 +180,5 @@ class AdversarialAutoEncoderPyTorch(AbstractPyTorchNetwork):
 
         """
         return {"data":
-                    torch.from_numpy(batch["data"]
-                                     ).to(torch.float).to(input_device)}
-
+                torch.from_numpy(batch["data"]
+                                 ).to(torch.float).to(input_device)}

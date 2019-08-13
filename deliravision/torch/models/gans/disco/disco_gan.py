@@ -25,6 +25,7 @@ class DiscoGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, img_shape, generator_cls=GeneratorUNet,
                  discriminator_cls=Discriminator):
         super().__init__()
@@ -187,5 +188,5 @@ class DiscoGAN(AbstractPyTorchNetwork):
             correct device
         """
         return {"data":
-                    torch.from_numpy(batch["data"]
-                                     ).to(torch.float).to(input_device)}
+                torch.from_numpy(batch["data"]
+                                 ).to(torch.float).to(input_device)}

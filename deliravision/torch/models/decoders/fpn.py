@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 from ..utils import ConvNdTorch, NormNdTorch, PoolingNdTorch
 
+
 class FPNTorch(nn.Module):
     def __init__(self, strides, channels, out_channels,
-                    interp_mode='nearest', n_dim=2, norm_type="Batch",
-                    **kwargs):
+                 interp_mode='nearest', n_dim=2, norm_type="Batch",
+                 **kwargs):
         """
         FPN decoder network
 
@@ -30,7 +31,7 @@ class FPNTorch(nn.Module):
         super().__init__()
         if len(strides) + 1 != len(channels):
             raise ValueError("Strides must contain one element less than "
-                                "channels.")
+                             "channels.")
         assert len(channels) > 0
 
         self._strides = strides
@@ -77,14 +78,14 @@ class FPNTorch(nn.Module):
             if i != 0:
                 if self._interp_mode == 'transpose':
                     up = ConvNdTorch(n_dim, self._out_channels,
-                                        self._out_channels,
-                                        kernel_size=self._strides[i - 1],
-                                        stride=self._strides[i - 1],
-                                        transposed=True)
+                                     self._out_channels,
+                                     kernel_size=self._strides[i - 1],
+                                     stride=self._strides[i - 1],
+                                     transposed=True)
                 else:
                     up = torch.nn.Upsample(mode=self._interp_mode,
-                                            scale_factor=self._strides[i - 1],
-                                            **self._kwargs)
+                                           scale_factor=self._strides[i - 1],
+                                           **self._kwargs)
                 setattr(self, 'P_up{}'.format(i), up)
 
             self.num_layers += 1
@@ -105,7 +106,9 @@ class FPNTorch(nn.Module):
         """
         out_list = []
         for idx, inp in enumerate(reversed(inp_list), 1):
-            lateral_conv = getattr(self, 'P_lateral{}'.format(self.num_layers - idx))
+            lateral_conv = getattr(
+                self, 'P_lateral{}'.format(
+                    self.num_layers - idx))
             out_conv = getattr(self, 'P_out{}'.format(self.num_layers - idx))
 
             # compute lateral connection

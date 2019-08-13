@@ -5,6 +5,7 @@ class CoupledGenerators(torch.nn.Module):
     """
     Network of coupled generators (coupling is done via parameter sharing)
     """
+
     def __init__(self, img_size, latent_dim, in_channels):
         """
 
@@ -22,7 +23,7 @@ class CoupledGenerators(torch.nn.Module):
 
         self.init_size = img_size // 4
         self.fc = torch.nn.Sequential(torch.nn.Linear(latent_dim,
-                                                      128*self.init_size**2))
+                                                      128 * self.init_size**2))
 
         self.shared_conv = torch.nn.Sequential(
             torch.nn.BatchNorm2d(128),
@@ -78,6 +79,7 @@ class CoupledDiscriminators(torch.nn.Module):
     (possibly generated) images in different domains. The coupling is done
     by parameter sharing
     """
+
     def __init__(self, in_channels, img_size):
         super().__init__()
 

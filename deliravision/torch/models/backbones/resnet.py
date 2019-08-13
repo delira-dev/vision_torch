@@ -59,7 +59,8 @@ class BottleneckTorch(torch.nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  norm_layer="Batch", n_dim=2):
         super().__init__()
-        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        # Both self.conv2 and self.downsample layers downsample the input when
+        # stride != 1
         self.conv1 = conv1x1(inplanes, planes, n_dim=n_dim)
         self.bn1 = NormNdTorch(norm_layer, n_dim, planes)
         self.conv2 = conv3x3(planes, planes, stride, n_dim=n_dim)

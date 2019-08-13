@@ -28,6 +28,7 @@ class PixelDomainAdaptation(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, img_size, num_channels=1, latent_dim=100, n_classes=10,
                  n_residual_blocks=6, num_filts=64, lambda_task=0.1,
                  lambda_adv=1., generator_cls=Generator,
@@ -201,11 +202,11 @@ class PixelDomainAdaptation(AbstractPyTorchNetwork):
 
         metric_vals["acc_translated"] = torch.mean((torch.argmax(
             preds["labels_pred_fake"]) == data_dict["label_a"]
-                    ).to(torch.float))
+        ).to(torch.float))
 
         metric_vals["acc_translated"] = torch.mean((torch.argmax(
             preds["labels_pred_real_b"]) == data_dict["label_b"]
-                                                    ).to(torch.float))
+        ).to(torch.float))
 
         # zero gradients again just to make sure, gradients aren't carried to
         # next iteration (won't affect training since gradients are zeroed

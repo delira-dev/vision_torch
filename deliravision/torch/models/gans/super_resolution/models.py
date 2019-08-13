@@ -6,6 +6,7 @@ class FeatureExtractor(torch.nn.Module):
     """
     A simple VGG19 Feature Extractor
     """
+
     def __init__(self):
         super().__init__()
         vgg19_model = vgg19(pretrained=True)
@@ -34,6 +35,7 @@ class ResidualBlock(torch.nn.Module):
     """
     A simple residual block
     """
+
     def __init__(self, num_filts):
         """
 
@@ -77,6 +79,7 @@ class GeneratorResNet(torch.nn.Module):
     """
     Residual Generator Network
     """
+
     def __init__(self, in_channels=3, out_channels=3, n_residual_blocks=16):
         """
 
@@ -155,6 +158,7 @@ class Discriminator(torch.nn.Module):
     """
     A discriminator network originally introduced in PatchGAN
     """
+
     def __init__(self, img_shape):
         """
 

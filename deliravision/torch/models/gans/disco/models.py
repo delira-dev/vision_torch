@@ -5,6 +5,7 @@ class UNetDown(torch.nn.Module):
     """
     Downsampling Block for UNet Architecture
     """
+
     def __init__(self, in_size, out_size, normalize=True, dropout=0.0):
         """
 
@@ -84,6 +85,7 @@ class GeneratorUNet(torch.nn.Module):
     """
     A Unet-like Generator model
     """
+
     def __init__(self, num_channels):
         """
 
@@ -109,7 +111,7 @@ class GeneratorUNet(torch.nn.Module):
         self.final = torch.nn.Sequential(
             torch.nn.Upsample(scale_factor=2),
             torch.nn.ZeroPad2d((1, 0, 1, 0)),
-            torch.nn.Conv2d(128, num_channels, 4, padding=1), 
+            torch.nn.Conv2d(128, num_channels, 4, padding=1),
             torch.nn.Tanh()
         )
 
@@ -148,6 +150,7 @@ class Discriminator(torch.nn.Module):
     """
     A simple discriminative network working on patches (PatchGAN)
     """
+
     def __init__(self, input_shape):
         """
 
@@ -166,7 +169,7 @@ class Discriminator(torch.nn.Module):
         def discriminator_block(in_filters, out_filters, normalization=True):
             """Returns downsampling layers of each discriminator block"""
             layers = [torch.nn.Conv2d(in_filters, out_filters, 4,
-                                stride=2, padding=1)]
+                                      stride=2, padding=1)]
             if normalization:
                 layers.append(torch.nn.InstanceNorm2d(out_filters))
             layers.append(torch.nn.LeakyReLU(0.2, inplace=True))

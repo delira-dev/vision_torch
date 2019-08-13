@@ -25,6 +25,7 @@ class MUNIT(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, num_channels_a=3, num_channels_b=3, n_filts=64,
                  n_residual=3, n_sample=2,
                  style_dim=8, num_discr_paths=3,
@@ -238,11 +239,11 @@ class MUNIT(AbstractPyTorchNetwork):
 
         # calculate total loss for generative part
         loss_gen = (
-                attr_module.lambda_adversarial * (loss_gan_a + loss_gan_b)
-                + attr_module.lambda_identity * (loss_id_a + loss_id_b)
-                + attr_module.lambda_style * (loss_style_a + loss_style_b)
-                + attr_module.lambda_content * (loss_content_a + loss_content_b)
-                + attr_module.lambda_cycle * (loss_cyc_a + loss_cyc_b)
+            attr_module.lambda_adversarial * (loss_gan_a + loss_gan_b)
+            + attr_module.lambda_identity * (loss_id_a + loss_id_b)
+            + attr_module.lambda_style * (loss_style_a + loss_style_b)
+            + attr_module.lambda_content * (loss_content_a + loss_content_b)
+            + attr_module.lambda_cycle * (loss_cyc_a + loss_cyc_b)
         )
 
         # log generator losses
@@ -323,6 +324,3 @@ class MUNIT(AbstractPyTorchNetwork):
             "data_a": torch.from_numpy((batch["data_a"]).to(
                 torch.float).to(input_device))
         }
-
-
-

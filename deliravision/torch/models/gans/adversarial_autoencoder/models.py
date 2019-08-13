@@ -7,6 +7,7 @@ class Encoder(torch.nn.Module):
     """
     A very simple generator model
     """
+
     def __init__(self, latent_dim, img_shape):
         """
 
@@ -79,6 +80,7 @@ class Decoder(torch.nn.Module):
     """
     Decodes an already encoded image signal
     """
+
     def __init__(self, latent_dim, img_shape):
         """
 
@@ -128,6 +130,7 @@ class Generator(torch.nn.Module):
     """
     A Generator consisting of a combined encoder-decoder structure
     """
+
     def __init__(self, latent_dim, img_shape):
         """
 
@@ -167,6 +170,7 @@ class Discriminator(torch.nn.Module):
     """
     A Discriminator model, working on the latent dimension
     """
+
     def __init__(self, latent_dim):
         """
 
@@ -204,4 +208,3 @@ class Discriminator(torch.nn.Module):
         """
         validity = self.model(z)
         return validity
-

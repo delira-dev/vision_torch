@@ -5,7 +5,14 @@ class Generator(torch.nn.Module):
     """
     Simple Generator Network
     """
-    def __init__(self, latent_dim, n_classes, code_dim, img_size, num_channels):
+
+    def __init__(
+            self,
+            latent_dim,
+            n_classes,
+            code_dim,
+            img_size,
+            num_channels):
         """
 
         Parameters
@@ -72,6 +79,7 @@ class Discriminator(torch.nn.Module):
     """
     A simple discriminator network
     """
+
     def __init__(self, code_dim, n_classes, num_channels, img_size):
         """
 

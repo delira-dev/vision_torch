@@ -5,6 +5,7 @@ class Generator(torch.nn.Module):
     """
     A Generative Network
     """
+
     def __init__(self, latent_dim, img_size, num_channels, num_classes=10):
         """
 
@@ -67,6 +68,7 @@ class Discriminator(torch.nn.Module):
     """
     A discriminator network to determine the validity of images
     """
+
     def __init__(self, img_size, num_channels, num_classes=10):
         """
 

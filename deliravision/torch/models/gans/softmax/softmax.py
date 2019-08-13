@@ -24,6 +24,7 @@ class SoftmaxGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, latent_dim, img_shape, generator_cls=Generator,
                  discriminator_cls=Discriminator):
         """
@@ -82,7 +83,6 @@ class SoftmaxGAN(AbstractPyTorchNetwork):
     @staticmethod
     def closure(model, data_dict: dict, optimizers: dict, losses=None,
                 metrics=None, fold=0, **kwargs):
-
         """
         Function which handles prediction from batch, logging, loss calculation
         and optimizer step

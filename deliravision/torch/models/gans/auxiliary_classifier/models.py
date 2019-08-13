@@ -6,6 +6,7 @@ class Generator(torch.nn.Module):
     A very simple generator model, which uses an embedding as conditioning
     for creating samples of certain classes
     """
+
     def __init__(self, n_classes=10, latent_dim=100, img_size=32,
                  n_channels=1):
         """
@@ -27,7 +28,10 @@ class Generator(torch.nn.Module):
         self.label_emb = torch.nn.Embedding(n_classes, latent_dim)
 
         self.init_size = img_size // 4  # Initial size before upsampling
-        self.l1 = torch.nn.Sequential(torch.nn.Linear(latent_dim, 128 * self.init_size ** 2))
+        self.l1 = torch.nn.Sequential(
+            torch.nn.Linear(
+                latent_dim,
+                128 * self.init_size ** 2))
 
         self.conv_blocks = torch.nn.Sequential(
             torch.nn.BatchNorm2d(128),
@@ -71,6 +75,7 @@ class Discriminator(torch.nn.Module):
     """
     A very simple discriminator model
     """
+
     def __init__(self, n_classes=10, img_size=32, n_channels=1):
         """
 

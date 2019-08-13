@@ -5,6 +5,7 @@ class UNetDown(torch.nn.Module):
     """
     The Downsampling Block of a UNet
     """
+
     def __init__(self, in_size, out_size, normalize=True, dropout=0.0):
         """
 
@@ -52,6 +53,7 @@ class UNetUp(torch.nn.Module):
     """
     An Upsampling Block of the UNet
     """
+
     def __init__(self, in_size, out_size, dropout=0.0):
         """
 
@@ -86,6 +88,7 @@ class Generator(torch.nn.Module):
     """
     A very simple Unet-like Generator network
     """
+
     def __init__(self, input_channels):
         """
 
@@ -154,6 +157,7 @@ class Discriminator(torch.nn.Module):
     The discriminator model
 
     """
+
     def __init__(self, input_shape):
         """
 

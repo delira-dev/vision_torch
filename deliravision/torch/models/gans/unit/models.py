@@ -5,6 +5,7 @@ class ResidualBlock(torch.nn.Module):
     """
     A simple Residual Block
     """
+
     def __init__(self, num_filts):
         """
 
@@ -49,7 +50,13 @@ class Encoder(torch.nn.Module):
     """
     A simple Encoder Network
     """
-    def __init__(self, shared_block, in_channels=3, num_filts=64, n_downsample=2):
+
+    def __init__(
+            self,
+            shared_block,
+            in_channels=3,
+            num_filts=64,
+            n_downsample=2):
         """
 
         Parameters
@@ -135,6 +142,7 @@ class Generator(torch.nn.Module):
     """
     A residual generator network
     """
+
     def __init__(self, shared_block, out_channels=3, num_filts=64,
                  n_upsample=2):
         """
@@ -200,6 +208,7 @@ class Discriminator(torch.nn.Module):
     """
     A discriminative PatchGAN-based network
     """
+
     def __init__(self, img_shape):
         """
 

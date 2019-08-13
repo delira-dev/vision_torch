@@ -31,6 +31,7 @@ class BoundaryEquilibriumGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, n_channels, latent_dim, img_size,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         """
@@ -133,7 +134,7 @@ class BoundaryEquilibriumGAN(AbstractPyTorchNetwork):
 
         predictions = model(data_dict["data"])
 
-        loss_gen = (predictions["discr_fake"]-data_dict["data"]).abs().mean()
+        loss_gen = (predictions["discr_fake"] - data_dict["data"]).abs().mean()
         loss_vals["gen_total"] = loss_gen.item()
 
         optimizers["generator"].zero_grad()

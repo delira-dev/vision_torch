@@ -7,6 +7,7 @@ class Generator(torch.nn.Module):
     """
     A simple generative network
     """
+
     def __init__(self, img_shape, latent_dim):
         """
 
@@ -62,6 +63,7 @@ class Discriminator(torch.nn.Module):
     """
     A very simple discriminator network
     """
+
     def __init__(self, img_shape):
         """
 

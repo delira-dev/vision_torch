@@ -5,6 +5,7 @@ class ResidualBlock(torch.nn.Module):
     """
     A Simple Residual Block
     """
+
     def __init__(self, in_features):
         """
 
@@ -49,6 +50,7 @@ class GeneratorResNet(torch.nn.Module):
     """
     A simple residual generator network
     """
+
     def __init__(self, input_channels, num_residual_blocks):
         """
 
@@ -128,6 +130,7 @@ class Discriminator(torch.nn.Module):
     """
     A patchwise simple discriminator (PatchGAN)
     """
+
     def __init__(self, input_shape):
         """
 

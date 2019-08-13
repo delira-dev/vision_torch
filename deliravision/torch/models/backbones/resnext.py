@@ -60,8 +60,12 @@ class BottleneckTorch(nn.Module):
         if in_channels != out_channels or stride != 1:
             if avg_down:
                 self.shortcut.add_module(
-                    'shortcut_avg', PoolingNdTorch("Avg", n_dim=n_dim,
-                                                   kernel_size=stride, stride=stride))
+                    'shortcut_avg',
+                    PoolingNdTorch(
+                        "Avg",
+                        n_dim=n_dim,
+                        kernel_size=stride,
+                        stride=stride))
                 self.shortcut.add_module(
                     'shortcut_conv', ConvNdTorch(
                         n_dim, in_channels, out_channels,

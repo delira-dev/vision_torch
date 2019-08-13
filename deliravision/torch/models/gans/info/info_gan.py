@@ -25,6 +25,7 @@ class InfoGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, latent_dim, n_classes, code_dim, img_size, num_channels,
                  lambda_cat=1., lambda_cont=0.1,
                  generator_cls=Generator, discriminator_cls=Discriminator):
@@ -226,11 +227,3 @@ class InfoGAN(AbstractPyTorchNetwork):
                 input_device
             )
         }
-
-
-
-
-
-
-
-

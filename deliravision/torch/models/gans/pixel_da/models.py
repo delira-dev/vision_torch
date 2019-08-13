@@ -5,6 +5,7 @@ class ResidualBlock(torch.nn.Module):
     """
     A single Residual Block
     """
+
     def __init__(self, num_filts):
         """
 
@@ -45,6 +46,7 @@ class Generator(torch.nn.Module):
     """
     The generator topology
     """
+
     def __init__(self, latent_dim, num_channels, img_size, n_residual_blocks,
                  num_filts=64):
         """
@@ -64,7 +66,8 @@ class Generator(torch.nn.Module):
         """
         super().__init__()
 
-        # Fully-connected layer which constructs image channel shaped output from noise
+        # Fully-connected layer which constructs image channel shaped output
+        # from noise
         self.fc = torch.nn.Linear(latent_dim, num_channels * img_size ** 2)
 
         self.l1 = torch.nn.Sequential(
@@ -108,6 +111,7 @@ class Discriminator(torch.nn.Module):
     """
     A discriminator network
     """
+
     def __init__(self, num_channels):
         """
 
@@ -159,6 +163,7 @@ class Classifier(torch.nn.Module):
     """
     Classifier Network
     """
+
     def __init__(self, num_channels, img_size, n_classes):
         """
 

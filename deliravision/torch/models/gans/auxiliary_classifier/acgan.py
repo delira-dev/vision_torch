@@ -27,7 +27,7 @@ class AuxiliaryClassifierGANPyTorch(AbstractPyTorchNetwork):
 
     """
 
-    def __init__(self,  n_classes=10, latent_dim=100, img_size=32,
+    def __init__(self, n_classes=10, latent_dim=100, img_size=32,
                  n_channels=1, generator_cls=Generator,
                  discriminator_cls=Discriminator):
         """

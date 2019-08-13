@@ -25,6 +25,7 @@ class Pix2Pix(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, in_channels: int = 3, out_channels: int = 3,
                  lambda_pixel: float = 100.,
                  generator_cls=GeneratorUNet, discriminator_cls=Discriminator):

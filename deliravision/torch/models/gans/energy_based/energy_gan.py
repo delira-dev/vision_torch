@@ -24,6 +24,7 @@ class EnergyBasedGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, img_size, num_channels, latent_dim,
                  generator_cls=Generator,
                  discriminator_cls=Discriminator):
@@ -71,7 +72,7 @@ class EnergyBasedGAN(AbstractPyTorchNetwork):
         """
         if noise is None:
             noise = torch.randn(imgs.size(0), self._latent_dim,
-                               dtype=imgs.dtype, device=imgs.device)
+                                dtype=imgs.dtype, device=imgs.device)
 
         gen_imgs = self.generator(noise)
 
@@ -163,4 +164,4 @@ class EnergyBasedGAN(AbstractPyTorchNetwork):
         return {
             "data":
                 torch.from_numpy(batch["data"]).to(torch.float
-                                                  ).to(input_device)}
+                                                   ).to(input_device)}

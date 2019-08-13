@@ -28,6 +28,7 @@ class ContextConditionalGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, img_shape, mask_size, generator_cls=Generator,
                  discriminator_cls=Discriminator):
         """
@@ -225,6 +226,3 @@ class ContextConditionalGAN(AbstractPyTorchNetwork):
         return {"data": batch["data"].to(torch.float).to(input_device),
                 "data_lr":
                     batch["data_lr"].to(torch.float).to(input_device).clone()}
-
-
-

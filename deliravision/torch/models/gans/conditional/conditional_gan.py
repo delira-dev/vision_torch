@@ -26,6 +26,7 @@ class ConditionalGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, latent_dim, n_classes, img_shape,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         """
@@ -84,7 +85,7 @@ class ConditionalGAN(AbstractPyTorchNetwork):
 
         if z is None:
             z = torch.randn(x.size(0), self._latent_dim, device=x.device,
-                           dtype=x.dtype)
+                            dtype=x.dtype)
 
         if gen_labels is None:
             gen_labels = torch.randint_like(labels, 0, self._n_classes)
@@ -174,4 +175,3 @@ class ConditionalGAN(AbstractPyTorchNetwork):
                                          ).to(torch.float).to(input_device),
                 "label": torch.from_numpy(batch["label"]
                                           ).to(torch.long).to(output_device)}
-

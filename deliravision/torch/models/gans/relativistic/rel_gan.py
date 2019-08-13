@@ -25,6 +25,7 @@ class RelativisticGAN(AbstractPyTorchNetwork):
         is used, inferences might be done multiple times per network, to obtain
         all necessary (intermediate) outputs for training.
         """
+
     def __init__(self, img_size, num_channels, latent_dim, rel_avg_gan=True,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         """
@@ -130,7 +131,10 @@ class RelativisticGAN(AbstractPyTorchNetwork):
 
         if rel_avg_gan:
             loss_g = losses["adversarial"](
-                preds["discr_fake"]-preds["discr_real"].mean(0, keepdim=True),
+                preds["discr_fake"] -
+                preds["discr_real"].mean(
+                    0,
+                    keepdim=True),
                 True)
         else:
             loss_g = losses["adversarial"](
@@ -144,11 +148,17 @@ class RelativisticGAN(AbstractPyTorchNetwork):
 
         if rel_avg_gan:
             discr_fake = losses["adversarial"](
-                preds["discr_fake"] - preds["discr_real"].mean(0, keepdim=True),
+                preds["discr_fake"] -
+                preds["discr_real"].mean(
+                    0,
+                    keepdim=True),
                 False)
 
             discr_real = losses["adversarial"](
-                preds["discr_real"] - preds["discr_fake"].mean(0, keepdim=True),
+                preds["discr_real"] -
+                preds["discr_fake"].mean(
+                    0,
+                    keepdim=True),
                 True)
 
         else:

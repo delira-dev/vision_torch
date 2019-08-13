@@ -29,6 +29,7 @@ class ContextEncoder(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, in_channels,
                  generator_cls=Generator,
                  discriminator_cls=Discriminator):

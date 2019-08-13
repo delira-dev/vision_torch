@@ -8,6 +8,7 @@ class ReplayBuffer(object):
     of new samples and enqueues the new samples for later usage
 
     """
+
     def __init__(self, max_size=50, to_cpu=True):
         """
 

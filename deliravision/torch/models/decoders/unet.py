@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 from ..utils import ConvNdTorch, NormNdTorch, PoolingNdTorch
 
+
 class UNetTorch(nn.Module):
     def __init__(self, strides, channels,
-                    merge_mode='add', interp_mode='nearest',
-                    n_dim=2, norm_layer="Batch", **kwargs):
+                 merge_mode='add', interp_mode='nearest',
+                 n_dim=2, norm_layer="Batch", **kwargs):
         """
         UNet decoder network
         .. note:: The U-Net decoder does not include the final convolution
@@ -36,7 +37,7 @@ class UNetTorch(nn.Module):
         super().__init__()
         if len(strides) + 1 != len(channels):
             raise ValueError("Strides must contain one element less than "
-                                "channels.")
+                             "channels.")
         assert len(channels) > 0
 
         self._strides = strides
@@ -83,15 +84,15 @@ class UNetTorch(nn.Module):
             if i != 0:
                 if self._interp_mode == 'transpose':
                     up = ConvNdTorch(n_dim, self._channels[i],
-                                        self._channels[i - 1],
-                                        kernel_size=self._strides[i - 1],
-                                        stride=self._strides[i - 1],
-                                        transposed=True)
+                                     self._channels[i - 1],
+                                     kernel_size=self._strides[i - 1],
+                                     stride=self._strides[i - 1],
+                                     transposed=True)
                 else:
                     up = nn.Sequential(
                         torch.nn.Upsample(mode=self._interp_mode,
-                                            scale_factor=self._strides[i - 1],
-                                            **self._kwargs),
+                                          scale_factor=self._strides[i - 1],
+                                          **self._kwargs),
                         ConvNdTorch(n_dim, self._channels[i],
                                     self._channels[i - 1], kernel_size=3,
                                     stride=1, padding=1),

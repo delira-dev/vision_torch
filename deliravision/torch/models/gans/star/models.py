@@ -5,6 +5,7 @@ class ResidualBlock(torch.nn.Module):
     """
     Simple Residual Block
     """
+
     def __init__(self, num_filts):
         """
 
@@ -46,10 +47,11 @@ class ResidualBlock(torch.nn.Module):
         return x + self.conv_block(x)
 
 
-class  GeneratorResNet(torch.nn.Module):
+class GeneratorResNet(torch.nn.Module):
     """
     The Residual Generator
     """
+
     def __init__(self, img_shape=(3, 128, 128), res_blocks=9, c_dim=5):
         """
 
@@ -94,10 +96,19 @@ class  GeneratorResNet(torch.nn.Module):
         # Upsampling
         for _ in range(2):
             model += [
-                torch.nn.ConvTranspose2d(curr_dim, curr_dim // 2, 4, stride=2,
-                                         padding=1, bias=False),
-                torch.nn.InstanceNorm2d(curr_dim // 2, affine=True, track_running_stats=True),
-                torch.nn.ReLU(inplace=True),
+                torch.nn.ConvTranspose2d(
+                    curr_dim,
+                    curr_dim // 2,
+                    4,
+                    stride=2,
+                    padding=1,
+                    bias=False),
+                torch.nn.InstanceNorm2d(
+                    curr_dim // 2,
+                    affine=True,
+                    track_running_stats=True),
+                torch.nn.ReLU(
+                    inplace=True),
             ]
             curr_dim = curr_dim // 2
 
@@ -135,6 +146,7 @@ class Discriminator(torch.nn.Module):
     """
     A Discriminative model with an auxiliary classification task
     """
+
     def __init__(self, img_shape=(3, 128, 128), c_dim=5, n_strided=6):
         """
 

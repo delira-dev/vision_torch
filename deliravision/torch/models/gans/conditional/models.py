@@ -7,6 +7,7 @@ class Generator(torch.nn.Module):
     """
     A very simple generator model to generate images of specific classes
     """
+
     def __init__(self, n_classes, img_shape, latent_dim):
         """
 
@@ -38,7 +39,7 @@ class Generator(torch.nn.Module):
             *block(256, 512),
             *block(512, 1024),
             torch.nn.Linear(1024, int(reduce(mul, img_shape))),
-           torch. nn.Tanh()
+            torch. nn.Tanh()
         )
 
         self._img_shape = img_shape
@@ -72,6 +73,7 @@ class Discriminator(torch.nn.Module):
     """
     A very simple discriminator network for conditionally generated images
     """
+
     def __init__(self, n_classes, img_shape):
         """
 

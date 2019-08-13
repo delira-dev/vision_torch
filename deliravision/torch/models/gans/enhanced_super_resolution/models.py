@@ -7,6 +7,7 @@ class FeatureExtractor(torch.nn.Module):
     """
     Basic Feature Extraction Network (VGG 19, only convolutional part)
     """
+
     def __init__(self):
         super().__init__()
         vgg19_model = vgg19(pretrained=True)
@@ -50,7 +51,14 @@ class DenseResidualBlock(torch.nn.Module):
         self.res_scale = res_scale
 
         def block(in_features, non_linearity=True):
-            layers = [torch.nn.Conv2d(in_features, filters, 3, 1, 1, bias=True)]
+            layers = [
+                torch.nn.Conv2d(
+                    in_features,
+                    filters,
+                    3,
+                    1,
+                    1,
+                    bias=True)]
             if non_linearity:
                 layers += [torch.nn.LeakyReLU()]
             return torch.nn.Sequential(*layers)
@@ -88,6 +96,7 @@ class ResidualInResidualDenseBlock(torch.nn.Module):
     """
     Block adding a residual skip connection around a dense residual block
     """
+
     def __init__(self, filters, res_scale=0.2):
         """
 
@@ -128,6 +137,7 @@ class GeneratorRRDB(torch.nn.Module):
     """
     Generator Network with nested residuals around dense blocks
     """
+
     def __init__(self, num_channels, filters=64, num_res_blocks=16,
                  num_upsample=2):
         """
@@ -202,6 +212,7 @@ class Discriminator(torch.nn.Module):
     """
     The discriminative model
     """
+
     def __init__(self, input_shape):
         """
 

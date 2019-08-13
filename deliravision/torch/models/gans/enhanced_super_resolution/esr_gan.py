@@ -159,7 +159,7 @@ class EnhancedSuperResolutionGAN(AbstractPyTorchNetwork):
 
         # Adversarial loss (relativistic average GAN)
         loss_adv = losses["adversarial"](
-            preds["discr_fake"]-preds["discr_real"].mean(0, keepdim=True),
+            preds["discr_fake"] - preds["discr_real"].mean(0, keepdim=True),
             True)
         loss_vals["gen_adversarial"] = loss_adv.item()
 

@@ -5,6 +5,7 @@ class Generator(torch.nn.Module):
     """
     Simple Convolutional Generator Network
     """
+
     def __init__(self, img_size, latent_dim, num_channels):
         """
 
@@ -61,6 +62,7 @@ class Discriminator(torch.nn.Module):
     """
     A convolutional discriminator model
     """
+
     def __init__(self, num_channels, img_size):
         """
         Parameters

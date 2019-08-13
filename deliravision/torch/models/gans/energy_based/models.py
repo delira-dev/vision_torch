@@ -5,6 +5,7 @@ class Generator(torch.nn.Module):
     """
     Simple Generative Model
     """
+
     def __init__(self, img_size, latent_dim, num_channels):
         """
 
@@ -60,6 +61,7 @@ class Discriminator(torch.nn.Module):
     """
     A simple discriminative network
     """
+
     def __init__(self, img_size, num_channels):
         """
 
@@ -112,5 +114,10 @@ class Discriminator(torch.nn.Module):
         out = self.down(img)
         embedding = self.embedding(out.view(out.size(0), -1))
         out = self.fc(embedding)
-        out = self.up(out.view(out.size(0), 64, self.down_size, self.down_size))
+        out = self.up(
+            out.view(
+                out.size(0),
+                64,
+                self.down_size,
+                self.down_size))
         return out, embedding

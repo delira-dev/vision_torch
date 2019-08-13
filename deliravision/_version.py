@@ -220,7 +220,7 @@ def prepare_remote(remote_url, repo_dir, root):
         GITS = ["git.cmd", "git.exe"]
 
     if not os.path.isdir(repo_dir):
-        run_command(GITS,  ["clone", "-q" , "--bare", remote_url, repo_dir],
+        run_command(GITS, ["clone", "-q", "--bare", remote_url, repo_dir],
                     cwd=root,
                     hide_stderr=True)
     else:
@@ -332,6 +332,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, remote,
     pieces["date"] = date.strip().replace(" ", "T", 1).replace(" ", "", 1)
 
     return pieces
+
 
 def plus_or_dot(pieces):
     """Return a + if we don't already have one, else return a ."""

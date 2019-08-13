@@ -1064,7 +1064,7 @@ def prepare_remote(remote_url, repo_dir, root):
         GITS = ["git.cmd", "git.exe"]
 
     if not os.path.isdir(repo_dir):
-        run_command(GITS,  ["clone", "-q" , "--bare", remote_url, repo_dir],
+        run_command(GITS, ["clone", "-q", "--bare", remote_url, repo_dir],
                     cwd=root,
                     hide_stderr=True)
     else:
@@ -1176,6 +1176,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, remote,
     pieces["date"] = date.strip().replace(" ", "T", 1).replace(" ", "", 1)
 
     return pieces
+
 
 def do_vcs_install(manifest_in, versionfile_source, ipy):
     """Git-specific installation logic for Versioneer.
@@ -1560,7 +1561,8 @@ def get_cmdclass(cmdclass=None):
         # parent is protected against the child's "import versioneer". By
         # removing ourselves from sys.modules here, before the child build
         # happens, we protect the child from the parent's versioneer too.
-        # Also see https://github.com/warner/p"REMOTE_URL": cfg.remote,ython-versioneer/issues/52
+        # Also see https://github.com/warner/p"REMOTE_URL":
+        # cfg.remote,ython-versioneer/issues/52
 
     cmds = {} if cmdclass is None else cmdclass.copy()
 
@@ -1733,7 +1735,7 @@ a section like:
  tag_prefix =
  parentdir_prefix = myproject-
  remote = https://github.com/link/to/myproect
- 
+
 You will also need to edit your setup.py to use the results:
 
  import versioneer

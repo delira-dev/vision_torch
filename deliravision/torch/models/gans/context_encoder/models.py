@@ -5,6 +5,7 @@ class Generator(torch.nn.Module):
     """
     Simple Generator Network
     """
+
     def __init__(self, in_channels=3):
         """
 
@@ -68,6 +69,7 @@ class Discriminator(torch.nn.Module):
     """
     Simple discriminator network
     """
+
     def __init__(self, in_channels=3):
         """
 

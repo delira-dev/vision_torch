@@ -26,6 +26,7 @@ class CoupledGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, img_size, in_channels, latent_dim,
                  generator_cls=CoupledGenerators,
                  discriminator_cls=CoupledDiscriminators):
@@ -90,7 +91,6 @@ class CoupledGAN(AbstractPyTorchNetwork):
     @staticmethod
     def closure(model, data_dict: dict, optimizers: dict, losses=None,
                 metrics=None, fold=0, **kwargs):
-
         """
         Function which handles prediction from batch, logging, loss calculation
         and optimizer step

@@ -5,7 +5,16 @@ from .basic_networks import BaseSegmentationTorchNetwork
 
 
 class PSPModuleTorch(torch.nn.Module):
-    def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6), n_dim=2):
+    def __init__(
+            self,
+            features,
+            out_features=1024,
+            sizes=(
+                1,
+                2,
+                3,
+                6),
+            n_dim=2):
         super().__init__()
 
         self.upsampling_mode = None
@@ -33,8 +42,11 @@ class PSPModuleTorch(torch.nn.Module):
 
     def forward(self, x):
         spatial_size = x.size()[2:]
-        priors = [F.upsample(stage(x), size=spatial_size, mode=self.upsampling_mode)
-                  for stage in self.stages] + [x]
+        priors = [
+            F.upsample(
+                stage(x),
+                size=spatial_size,
+                mode=self.upsampling_mode) for stage in self.stages] + [x]
 
         return F.relu(self.bottleneck(torch.cat(priors, 1)))
 
@@ -59,21 +71,53 @@ class PSPUpsampleTorch(torch.nn.Module):
     def forward(self, x):
         spatial_size = [2 * __size for __size in x.size()[2:]]
 
-        return self.conv(F.upsample(x, size=spatial_size, mode=self.upsampling_mode))
+        return self.conv(
+            F.upsample(
+                x,
+                size=spatial_size,
+                mode=self.upsampling_mode))
 
 
 class PSPNet(BaseSegmentationTorchNetwork):
-    def __init__(self, n_classes, sizes=(1, 2, 3, 6), psp_size=2048, deep_feature_size=1024, backend="resnet18",
-                 n_dim=2, norm_type="Batch", logsoftmax=True):
+    def __init__(
+            self,
+            n_classes,
+            sizes=(
+                1,
+                2,
+                3,
+                6),
+            psp_size=2048,
+            deep_feature_size=1024,
+            backend="resnet18",
+            n_dim=2,
+            norm_type="Batch",
+            logsoftmax=True):
 
-        super().__init__(n_classes, sizes, psp_size, deep_feature_size, backend,
-                         n_dim, norm_type, logsoftmax)
+        super().__init__(
+            n_classes,
+            sizes,
+            psp_size,
+            deep_feature_size,
+            backend,
+            n_dim,
+            norm_type,
+            logsoftmax)
 
-    def _build_model(self, n_classes, sizes, psp_size, deep_feature_size, backend,
-                     n_dim, norm_type, logsoftmax):
+    def _build_model(
+            self,
+            n_classes,
+            sizes,
+            psp_size,
+            deep_feature_size,
+            backend,
+            n_dim,
+            norm_type,
+            logsoftmax):
         from . import model_fns as backends
 
-        # ToDo: remove classifier/last FC from backend net (maybe not necessary at all)
+        # ToDo: remove classifier/last FC from backend net (maybe not necessary
+        # at all)
         self._backend = getattr(backends, backend + "_torch")
 
         self._psp = PSPModuleTorch(psp_size, 1024, sizes)
@@ -102,7 +146,8 @@ class PSPNet(BaseSegmentationTorchNetwork):
         self.adaptive_pool = PoolingNdTorch("AdaptiveMax", n_dim, 1)
 
     def forward(self, x):
-        # ToDo: Change this to get the activations from the last 2 layers of backend (don't know how to use your hook)
+        # ToDo: Change this to get the activations from the last 2 layers of
+        # backend (don't know how to use your hook)
         f, class_f = torch.rand(1, 2), torch.rand(1, 2)
 
         p = self._psp(f)

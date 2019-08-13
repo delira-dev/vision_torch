@@ -25,6 +25,7 @@ class SemiSupervisedGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, latent_dim, img_size, num_channels, num_classes=10,
                  generator_cls=Generator,
                  discriminator_cls=Discriminator):

@@ -5,6 +5,7 @@ from deliravision.models.gans.deep_convolutional.models import Generator, \
 
 from deliravision.models.gans.utils import weights_init_normal
 
+
 class DeepConvolutionalGAN(AbstractPyTorchNetwork):
     """
     Implementation of Deep Convolutional Generative Adversarial Networks for
@@ -25,6 +26,7 @@ class DeepConvolutionalGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, latent_dim, img_size, num_channels,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         super().__init__()
@@ -39,7 +41,7 @@ class DeepConvolutionalGAN(AbstractPyTorchNetwork):
     def forward(self, imgs: torch.Tensor, noise: torch.Tensor = None):
         if noise is None:
             noise = torch.randn(imgs.size(0), self._latent_dim,
-                               device=imgs.device, dtype=imgs.dtype)
+                                device=imgs.device, dtype=imgs.dtype)
 
         gen_imgs = self.generator(noise)
 
@@ -138,5 +140,5 @@ class DeepConvolutionalGAN(AbstractPyTorchNetwork):
             correct device
         """
         return {"data":
-                    torch.from_numpy(batch["data"]
-                                     ).to(torch.float).to(input_device)}
+                torch.from_numpy(batch["data"]
+                                 ).to(torch.float).to(input_device)}

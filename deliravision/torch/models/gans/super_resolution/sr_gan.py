@@ -26,6 +26,7 @@ class SuperResolutionGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, img_shape, num_residuals, generator_cls=GeneratorResNet,
                  feature_extractor_cls=FeatureExtractor,
                  discriminator_cls=Discriminator):

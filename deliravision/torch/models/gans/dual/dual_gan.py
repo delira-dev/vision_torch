@@ -112,7 +112,6 @@ class DualGAN(AbstractPyTorchNetwork):
     @staticmethod
     def closure(model, data_dict: dict, optimizers: dict, losses=None,
                 metrics=None, fold=0, **kwargs):
-
         """
         Function which handles prediction from batch, logging, loss calculation
         and optimizer step
@@ -248,15 +247,8 @@ class DualGAN(AbstractPyTorchNetwork):
             correct device
         """
         return {"data_a":
-                    torch.from_numpy(batch["data_a"]
-                                     ).to(torch.float).to(input_device),
+                torch.from_numpy(batch["data_a"]
+                                 ).to(torch.float).to(input_device),
                 "data_b":
                     torch.from_numpy(batch["data_b"]
                                      ).to(torch.float).to(input_device)}
-
-
-
-
-
-
-

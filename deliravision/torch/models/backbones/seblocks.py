@@ -151,7 +151,8 @@ class SEBottleneckTorch(torch.nn.Module):
             reduction for squeeze and excitation layer
         """
         super().__init__()
-        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        # Both self.conv2 and self.downsample layers downsample the input when
+        # stride != 1
         self.conv1 = conv1x1(inplanes, planes, n_dim=n_dim)
         self.bn1 = NormNdTorch(norm_layer, n_dim, planes)
         self.conv2 = conv3x3(planes, planes, stride, n_dim=n_dim)

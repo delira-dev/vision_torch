@@ -24,6 +24,7 @@ class StarGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, img_shape, c_dim=5, num_res_blocks=9, num_strided=6,
                  gen_update_freq=5, lambda_cls=1., lambda_rec=10.,
                  lambda_gp=10., generator_cls=GeneratorResNet,
@@ -121,7 +122,7 @@ class StarGAN(AbstractPyTorchNetwork):
         real_val, real_cls = self.discriminator(x)
 
         if alpha is None:
-            alpha =torch.rand(x.size(0), 1, 1, 1)
+            alpha = torch.rand(x.size(0), 1, 1, 1)
 
         # Get random interpolation between real and fake samples
         interpolates = (alpha * x + ((1 - alpha) * fake_imgs))
@@ -180,7 +181,7 @@ class StarGAN(AbstractPyTorchNetwork):
         preds = model(data_dict["data"], data_dict["label"])
 
         discr_gp = losses["gradient_penalty"](preds["discr_interpolates"],
-                                        preds["interpolates"])
+                                              preds["interpolates"])
 
         discr_adv = -preds["real_val"].mean() + preds["fake_val"].mean()
 

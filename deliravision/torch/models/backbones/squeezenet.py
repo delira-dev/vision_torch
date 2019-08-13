@@ -2,20 +2,21 @@ import torch
 from ..utils import ConvNdTorch, PoolingNdTorch
 from ..basic_networks import BaseClassificationTorchNetwork
 
+
 class FireTorch(torch.nn.Module):
 
     def __init__(self, inplanes, squeeze_planes,
-                    expand1x1_planes, expand3x3_planes, n_dim=2):
+                 expand1x1_planes, expand3x3_planes, n_dim=2):
         super().__init__()
         self.inplanes = inplanes
         self.squeeze = ConvNdTorch(n_dim, inplanes, squeeze_planes,
-                                    kernel_size=1)
+                                   kernel_size=1)
         self.squeeze_activation = torch.nn.ReLU(inplace=True)
         self.expand1x1 = ConvNdTorch(n_dim, squeeze_planes, expand1x1_planes,
-                                    kernel_size=1)
+                                     kernel_size=1)
         self.expand1x1_activation = torch.nn.ReLU(inplace=True)
         self.expand3x3 = ConvNdTorch(n_dim, squeeze_planes, expand3x3_planes,
-                                    kernel_size=3, padding=1)
+                                     kernel_size=3, padding=1)
         self.expand3x3_activation = torch.nn.ReLU(inplace=True)
 
     def forward(self, x):
@@ -29,16 +30,16 @@ class FireTorch(torch.nn.Module):
 class SqueezeNetTorch(BaseClassificationTorchNetwork):
 
     def __init__(self, version=1.0, num_classes=1000, in_channels=3,
-                    n_dim=2, pool_type="Max", p_dropout=0.5):
+                 n_dim=2, pool_type="Max", p_dropout=0.5):
 
         super().__init__(version, num_classes, in_channels, n_dim,
-                            pool_type, p_dropout)
+                         pool_type, p_dropout)
 
     def _build_model(self, version, num_classes, in_channels, n_dim,
-                        pool_type, p_dropout) -> None:
+                     pool_type, p_dropout) -> None:
         if version not in [1.0, 1.1]:
             raise ValueError("Unsupported SqueezeNet version {version}:"
-                                "1.0 or 1.1 expected".format(version=version))
+                             "1.0 or 1.1 expected".format(version=version))
 
         self.num_classes = num_classes
         if version == 1.0:
@@ -46,18 +47,18 @@ class SqueezeNetTorch(BaseClassificationTorchNetwork):
                 ConvNdTorch(n_dim, in_channels, 96, kernel_size=7, stride=2),
                 torch.nn.ReLU(inplace=True),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(96, 16, 64, 64),
                 FireTorch(128, 16, 64, 64),
                 FireTorch(128, 32, 128, 128),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(256, 32, 128, 128),
                 FireTorch(256, 48, 192, 192),
                 FireTorch(384, 48, 192, 192),
                 FireTorch(384, 64, 256, 256),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(512, 64, 256, 256),
             )
         else:
@@ -65,15 +66,15 @@ class SqueezeNetTorch(BaseClassificationTorchNetwork):
                 ConvNdTorch(n_dim, 3, 64, kernel_size=3, stride=2),
                 torch.nn.ReLU(inplace=True),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(64, 16, 64, 64),
                 FireTorch(128, 16, 64, 64),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(128, 32, 128, 128),
                 FireTorch(256, 32, 128, 128),
                 PoolingNdTorch(pool_type, n_dim, kernel_size=3, stride=2,
-                                ceil_mode=True),
+                               ceil_mode=True),
                 FireTorch(256, 48, 192, 192),
                 FireTorch(384, 48, 192, 192),
                 FireTorch(384, 64, 256, 256),

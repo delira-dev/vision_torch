@@ -45,6 +45,7 @@ class UNetUp(torch.nn.Module):
     """
     A basic upsampling block to build generic unets
     """
+
     def __init__(self, in_size, out_size):
         """
         Parameters
@@ -84,6 +85,7 @@ class Generator(torch.nn.Module):
     """
     Class to build a generic U-Net like generator
     """
+
     def __init__(self, latent_dim, img_shape):
         """
         Parameters
@@ -156,6 +158,7 @@ class Encoder(torch.nn.Module):
     """
     A very simple encoder network (basically a resnet18)
     """
+
     def __init__(self, latent_dim):
         """
         Parameters
@@ -196,6 +199,7 @@ class MultiResolutionDiscriminator(torch.nn.Module):
     """
     A discriminator class working on multiple resolutions
     """
+
     def __init__(self, input_channels):
         """
         Parameters
@@ -226,7 +230,7 @@ class MultiResolutionDiscriminator(torch.nn.Module):
                     *discriminator_block(256, 512),
                     torch.nn.Conv2d(512, 1, 3, padding=1)
                 ),
-                )
+            )
 
         self.downsample = torch.nn.AdaptiveAvgPool2d(1, stride=2,
                                                      padding=[1, 1],

@@ -28,6 +28,7 @@ class BiCycleGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, latent_dim, img_shape,
                  generator_cls=Generator, encoder_cls=Encoder,
                  discriminator_cls=MultiResolutionDiscriminator,
@@ -109,10 +110,10 @@ class BiCycleGAN(AbstractPyTorchNetwork):
 
         fake_b = self.generator(real_a, encoded_z)
 
-        sampled_z =  torch.rand(real_a.size(0),
-                                self._latent_dim,
-                                device=real_a.device,
-                                dtype=real_a.dtype)
+        sampled_z = torch.rand(real_a.size(0),
+                               self._latent_dim,
+                               device=real_a.device,
+                               dtype=real_a.dtype)
 
         sampled_b = self.generator(real_a, sampled_z)
 

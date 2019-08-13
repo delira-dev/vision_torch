@@ -26,6 +26,7 @@ class WassersteinGAN(AbstractPyTorchNetwork):
     is used, inferences might be done multiple times per network, to obtain
     all necessary (intermediate) outputs for training.
     """
+
     def __init__(self, img_shape, latent_dim, clip_val=0.01, gen_update_freq=5,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         """

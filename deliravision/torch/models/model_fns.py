@@ -80,7 +80,7 @@ def create_resnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                   deep_start=False, avg_down=False,
                   **kwargs)
 
-                  
+
 def create_seresnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                           start_filts=64, zero_init_residual=False,
                           norm_layer="Batch", n_dim=2,

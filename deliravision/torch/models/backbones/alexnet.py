@@ -2,13 +2,14 @@ import torch
 from ..utils import ConvNdTorch, PoolingNdTorch
 from ..basic_networks import BaseClassificationTorchNetwork
 
+
 class AlexNetTorch(BaseClassificationTorchNetwork):
     def __init__(self, num_classes=1000, in_channels=3, n_dim=2,
-                    pool_type="Max"):
+                 pool_type="Max"):
         super().__init__(num_classes, in_channels, n_dim, pool_type)
 
     def _build_model(self, num_classes, in_channels, n_dim,
-                        pool_type) -> None:
+                     pool_type) -> None:
         self.features = torch.nn.Sequential(
             ConvNdTorch(n_dim, in_channels, 64, kernel_size=11, stride=4,
                         padding=2),

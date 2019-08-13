@@ -29,6 +29,7 @@ class BoundarySeekingGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, latent_dim, img_shape, generator_cls=Generator,
                  discriminator_cls=Discriminator):
         """

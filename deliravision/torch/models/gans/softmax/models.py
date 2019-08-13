@@ -7,6 +7,7 @@ class Generator(torch.nn.Module):
     """
     Generator topology
     """
+
     def __init__(self, latent_dim, img_shape):
         """
 
@@ -62,6 +63,7 @@ class Discriminator(torch.nn.Module):
     """
     A discriminative model
     """
+
     def __init__(self, img_shape):
         """
 

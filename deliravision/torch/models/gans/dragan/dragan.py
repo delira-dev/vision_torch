@@ -4,6 +4,7 @@ import torch
 
 from deliravision.models.gans.utils import weights_init_normal
 
+
 class DRAGAN(AbstractPyTorchNetwork):
     """
     Implementation of Generative Adversarial Networks following the convergence
@@ -25,6 +26,7 @@ class DRAGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, latent_dim, num_channels, img_size, lambda_gp=10.,
                  generator_cls=Generator, discriminator_cls=Discriminator):
         """
@@ -198,5 +200,5 @@ class DRAGAN(AbstractPyTorchNetwork):
             correct device
         """
         return {"data":
-                    torch.from_numpy(batch["data"]
-                                     ).to(torch.float).to(input_device)}
+                torch.from_numpy(batch["data"]
+                                 ).to(torch.float).to(input_device)}

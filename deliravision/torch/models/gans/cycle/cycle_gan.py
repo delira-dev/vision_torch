@@ -28,6 +28,7 @@ class CycleGAN(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, input_shape, num_gen_blocks,
                  lambda_cycle, lambda_identity,
                  generator_cls=GeneratorResNet,
@@ -99,12 +100,14 @@ class CycleGAN(AbstractPyTorchNetwork):
         discr_fake_a = self.discriminator_a(fake_a)
         discr_fake_b = self.discriminator_b(fake_b)
 
-        discr_fake_a_buffer = self.discriminator_a(self.replay_buffer_a(fake_a))
-        discr_fake_b_buffer = self.discriminator_b(self.replay_buffer_b(fake_b))
+        discr_fake_a_buffer = self.discriminator_a(
+            self.replay_buffer_a(fake_a))
+        discr_fake_b_buffer = self.discriminator_b(
+            self.replay_buffer_b(fake_b))
 
         return {"fake_a": fake_a, "fake_b": fake_b, "rec_a": rec_a,
                 "rec_b": rec_b, "discr_real_a": discr_real_a,
-                "discr_real_b": discr_real_b,  "discr_fake_a": discr_fake_a,
+                "discr_real_b": discr_real_b, "discr_fake_a": discr_fake_a,
                 "discr_fake_b": discr_fake_b, "id_a": id_a, "id_b": id_b,
                 "discr_fake_a_buffer": discr_fake_a_buffer,
                 "discr_fake_b_buffer": discr_fake_b_buffer}
@@ -112,7 +115,6 @@ class CycleGAN(AbstractPyTorchNetwork):
     @staticmethod
     def closure(model, data_dict: dict, optimizers: dict, losses=None,
                 metrics=None, fold=0, **kwargs):
-
         """
         Function which handles prediction from batch, logging, loss calculation
         and optimizer step

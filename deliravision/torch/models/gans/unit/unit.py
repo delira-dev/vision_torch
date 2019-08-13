@@ -26,6 +26,7 @@ class UNIT(AbstractPyTorchNetwork):
     all necessary (intermediate) outputs for training.
 
     """
+
     def __init__(self, img_shape, num_filts, n_sample,
                  shared_dim=None, lambda_adv=10., lambda_kl=0.1,
                  lambda_id=100., lambda_fake_kl=0.1, lambda_cycle=100.,
