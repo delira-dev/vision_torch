@@ -66,7 +66,9 @@ DENSENET_CONFIGS = {
 
 def create_resnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                         start_filts=64, zero_init_residual=False,
-                        norm_layer="Batch", n_dim=2, **kwargs):
+                        norm_layer="Batch", n_dim=2,
+                        deep_start=False, avg_down=False,
+                        **kwargs):
     config = RESNET_CONFIGS[str(num_layers)]
 
     return ResNet(config["block"], config["layers"],
@@ -74,12 +76,16 @@ def create_resnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                   in_channels=in_channels,
                   zero_init_residual=zero_init_residual,
                   start_filts=start_filts,
-                  norm_layer=norm_layer, n_dim=n_dim, **kwargs)
+                  norm_layer=norm_layer, n_dim=n_dim,
+                  deep_start=False, avg_down=False,
+                  **kwargs)
 
-
+                  
 def create_seresnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                           start_filts=64, zero_init_residual=False,
-                          norm_layer="Batch", n_dim=2, **kwargs):
+                          norm_layer="Batch", n_dim=2,
+                          deep_start=False, avg_down=False,
+                          **kwargs):
     config = SERESNET_CONFIGS[str(num_layers)]
 
     return ResNet(config["block"], config["layers"],
@@ -87,31 +93,41 @@ def create_seresnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                   in_channels=in_channels,
                   zero_init_residual=zero_init_residual,
                   start_filts=start_filts,
-                  norm_layer=norm_layer, n_dim=n_dim, **kwargs)
+                  norm_layer=norm_layer, n_dim=n_dim,
+                  deep_start=False, avg_down=False,
+                  **kwargs)
 
 
 def create_resnext_torch(num_layers: int, num_classes=1000, in_channels=3,
                          cardinality=32, width=4, start_filts=64,
-                         norm_layer="Batch", n_dim=2, **kwargs):
+                         norm_layer="Batch", n_dim=2,
+                         deep_start=False, avg_down=False,
+                         **kwargs):
     config = RESNEXT_CONFIGS[str(num_layers)]
 
     return ResNeXtTorch(config["block"], config["layers"],
                         num_classes=num_classes,
                         in_channels=in_channels, cardinality=cardinality,
                         width=width, start_filts=start_filts,
-                        norm_layer=norm_layer, n_dim=n_dim, **kwargs)
+                        norm_layer=norm_layer, n_dim=n_dim,
+                        deep_start=False, avg_down=False,
+                        **kwargs)
 
 
 def create_seresnext_torch(num_layers: int, num_classes=1000, in_channels=3,
                            cardinality=32, width=4, start_filts=64,
-                           norm_layer="Batch", n_dim=2, **kwargs):
+                           norm_layer="Batch", n_dim=2,
+                           deep_start=False, avg_down=False,
+                           **kwargs):
     config = SERESNEXT_CONFIGS[str(num_layers)]
 
     return ResNeXtTorch(config["block"], config["layers"],
                         num_classes=num_classes,
                         in_channels=in_channels, cardinality=cardinality,
                         width=width, start_filts=start_filts,
-                        norm_layer=norm_layer, n_dim=n_dim, **kwargs)
+                        norm_layer=norm_layer, n_dim=n_dim,
+                        deep_start=False, avg_down=False,
+                        **kwargs)
 
 
 def create_vgg_torch(num_layers: int, num_classes=1000, in_channels=3,
