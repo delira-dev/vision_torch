@@ -45,11 +45,11 @@ SERESNEXT_CONFIGS = {
 VGG_CONFIGS = {
     '11': [64, 'P', 128, 'P', 256, 256, 'P', 512, 512, 'P', 512, 512, 'P'],
     '13': [64, 64, 'P', 128, 128, 'P', 256, 256, 'P', 512, 512, 'P', 512,
-            512, 'P'],
+           512, 'P'],
     '16': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 'P', 512, 512, 512,
-            'P', 512, 512, 512, 'P'],
+           'P', 512, 512, 512, 'P'],
     '19': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 256, 'P', 512, 512,
-            512, 512, 'P', 512, 512, 512, 512, 'P'],
+           512, 512, 'P', 512, 512, 512, 512, 'P'],
 }
 
 DENSENET_CONFIGS = {
@@ -63,71 +63,89 @@ DENSENET_CONFIGS = {
             "block_config": (6, 12, 48, 32)},
 }
 
+
 def create_resnet_torch(num_layers: int, num_classes=1000, in_channels=3,
                         start_filts=64, zero_init_residual=False,
-                        norm_layer="Batch", n_dim=2):
+                        norm_layer="Batch", n_dim=2,
+                        deep_start=False, avg_down=False,
+                        **kwargs):
     config = RESNET_CONFIGS[str(num_layers)]
 
     return ResNet(config["block"], config["layers"],
-                    num_classes=num_classes,
-                    in_channels=in_channels,
-                    zero_init_residual=zero_init_residual,
-                    start_filts=start_filts,
-                    norm_layer=norm_layer, n_dim=n_dim)
+                  num_classes=num_classes,
+                  in_channels=in_channels,
+                  zero_init_residual=zero_init_residual,
+                  start_filts=start_filts,
+                  norm_layer=norm_layer, n_dim=n_dim,
+                  deep_start=False, avg_down=False,
+                  **kwargs)
 
+                  
 def create_seresnet_torch(num_layers: int, num_classes=1000, in_channels=3,
-                            start_filts=64, zero_init_residual=False,
-                            norm_layer="Batch", n_dim=2):
+                          start_filts=64, zero_init_residual=False,
+                          norm_layer="Batch", n_dim=2,
+                          deep_start=False, avg_down=False,
+                          **kwargs):
     config = SERESNET_CONFIGS[str(num_layers)]
 
     return ResNet(config["block"], config["layers"],
-                    num_classes=num_classes,
-                    in_channels=in_channels,
-                    zero_init_residual=zero_init_residual,
-                    start_filts=start_filts,
-                    norm_layer=norm_layer, n_dim=n_dim)
+                  num_classes=num_classes,
+                  in_channels=in_channels,
+                  zero_init_residual=zero_init_residual,
+                  start_filts=start_filts,
+                  norm_layer=norm_layer, n_dim=n_dim,
+                  deep_start=False, avg_down=False,
+                  **kwargs)
+
 
 def create_resnext_torch(num_layers: int, num_classes=1000, in_channels=3,
-                            cardinality=32, width=4, start_filts=64,
-                            norm_layer="Batch",
-                            n_dim=2, start_mode="7x7"):
+                         cardinality=32, width=4, start_filts=64,
+                         norm_layer="Batch", n_dim=2,
+                         deep_start=False, avg_down=False,
+                         **kwargs):
     config = RESNEXT_CONFIGS[str(num_layers)]
 
     return ResNeXtTorch(config["block"], config["layers"],
-                            num_classes=num_classes,
-                            in_channels=in_channels, cardinality=cardinality,
-                            width=width, start_filts=start_filts,
-                            norm_layer=norm_layer, n_dim=n_dim,
-                            start_mode=start_mode)
+                        num_classes=num_classes,
+                        in_channels=in_channels, cardinality=cardinality,
+                        width=width, start_filts=start_filts,
+                        norm_layer=norm_layer, n_dim=n_dim,
+                        deep_start=False, avg_down=False,
+                        **kwargs)
+
 
 def create_seresnext_torch(num_layers: int, num_classes=1000, in_channels=3,
-                            cardinality=32, width=4, start_filts=64,
-                            norm_layer="Batch",
-                            n_dim=2):
+                           cardinality=32, width=4, start_filts=64,
+                           norm_layer="Batch", n_dim=2,
+                           deep_start=False, avg_down=False,
+                           **kwargs):
     config = SERESNEXT_CONFIGS[str(num_layers)]
 
     return ResNeXtTorch(config["block"], config["layers"],
-                            num_classes=num_classes,
-                            in_channels=in_channels, cardinality=cardinality,
-                            width=width, start_filts=start_filts,
-                            norm_layer=norm_layer, n_dim=n_dim)
+                        num_classes=num_classes,
+                        in_channels=in_channels, cardinality=cardinality,
+                        width=width, start_filts=start_filts,
+                        norm_layer=norm_layer, n_dim=n_dim,
+                        deep_start=False, avg_down=False,
+                        **kwargs)
+
 
 def create_vgg_torch(num_layers: int, num_classes=1000, in_channels=3,
-                        init_weights=True, n_dim=2, norm_type="Batch",
-                        pool_type="Max"):
+                     init_weights=True, n_dim=2, norm_type="Batch",
+                     pool_type="Max", **kwargs):
 
     config = VGG_CONFIGS[str(num_layers)]
 
     return VGG(config, num_classes=num_classes,
-                in_channels=in_channels, init_weights=init_weights,
-                n_dim=n_dim, norm_type=norm_type, pool_type=pool_type)
+               in_channels=in_channels, init_weights=init_weights,
+               n_dim=n_dim, norm_type=norm_type, pool_type=pool_type, **kwargs)
+
 
 def create_densenet_torch(num_layers: int, bn_size=4, drop_rate=0,
-                            num_classes=1000, n_dim=2, pool_type="Max",
-                            norm_type="Batch"):
+                          num_classes=1000, n_dim=2, pool_type="Max",
+                          norm_type="Batch", **kwargs):
     config = DENSENET_CONFIGS[str(num_layers)]
 
     return DenseNetTorch(**config, bn_size=bn_size, drop_rate=drop_rate,
-                            num_classes=num_classes, n_dim=n_dim,
-                            pool_type=pool_type, norm_type=norm_type)
-
+                         num_classes=num_classes, n_dim=n_dim,
+                         pool_type=pool_type, norm_type=norm_type, **kwargs)

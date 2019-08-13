@@ -207,7 +207,7 @@ class SEBottleneckXTorch(nn.Module):
     start_filts = 64
 
     def __init__(self, in_channels, channels, stride, cardinality,
-                 width, n_dim, norm_layer, reduction=16):
+                 width, n_dim, norm_layer, avg_down, reduction=16):
         """
         Squeeze and Excitation ResNeXt Block
 
@@ -225,6 +225,8 @@ class SEBottleneckXTorch(nn.Module):
             dimensionality of convolutions
         norm_layer : str
             type of normalization layer
+        avg_down: bool
+            add avg pooling in shortcut connection
         reduction : int
             reduction for se layer
         """
@@ -253,10 +255,23 @@ class SEBottleneckXTorch(nn.Module):
         self.shortcut = nn.Sequential()
 
         if in_channels != out_channels or stride != 1:
-            self.shortcut.add_module(
-                'shortcut_conv', ConvNdTorch(n_dim, in_channels, out_channels,
-                                             kernel_size=1, stride=stride,
-                                             padding=0, bias=False))
+            if avg_down:
+                self.shortcut.add_module(
+                    'shortcut_avg', PoolingNdTorch("Avg", n_dim=n_dim,
+                                                   kernel_size=stride,
+                                                   stride=stride))
+                self.shortcut.add_module(
+                    'shortcut_conv', ConvNdTorch(
+                        n_dim, in_channels, out_channels,
+                        kernel_size=1, stride=1,
+                        padding=0, bias=False))
+            else:
+                self.shortcut.add_module(
+                    'shortcut_conv', ConvNdTorch(
+                        n_dim, in_channels, out_channels,
+                        kernel_size=1, stride=stride,
+                        padding=0, bias=False))
+
             self.shortcut.add_module(
                 'shortcut_bn', NormNdTorch(norm_layer, n_dim, out_channels))
 
